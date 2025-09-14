@@ -351,7 +351,7 @@ void updateAndRenameSong(Sounds &song_to_edit,const vector<string> &soung_text)
     fileW.close();
 }
 
-vector<string> readTextFromFile(string path_to_file)
+vector<string> readTextFromFile(string &path_to_file)
 {
     ifstream fileR(path_to_file);
     if(!fileR.is_open())
@@ -384,6 +384,17 @@ vector<string> readTextFromFile(string path_to_file)
     return soung_text;
 }
 
+void writeTextToFile(string &path_to_file,const vector<string> &soung_text)
+{
+
+    ofstream fileW(path_to_file);
+    for(string line: soung_text)
+    {
+        fileW<<line<<endl;
+    }
+
+    fileW.close();
+}
 
 void editSong(vector<Sounds> &song_catalog)
 {
@@ -503,7 +514,8 @@ void findSongsByWord(vector<Sounds> &song_catalog)
 
         if(count_this_word > 0)
         {
-            cout<<"В песне под названием " <<song.title <<" автора "<< song.author<<" было найдено это слово " <<count_this_word<<" раз"<<endl;
+            // cout<<"В песне под названием " <<song.title <<" автора "<< song.author<<" было найдено это слово " <<count_this_word<<" раз"<<endl;
+            cout<<"В песне под названием " <<song.title <<" автора "<< song.author<<endl;
         }
 
     }
@@ -557,6 +569,92 @@ void displayFullSong(vector<Sounds> &song_catalog)
 }
 
 
+void saveTextSongToFile(vector<Sounds> &song_catalog)
+{
+    cout<<"Выберете песню которую хотите сохранить: ";
+    int song_index;
+    cin>>song_index;
+
+    string path_to_file = song_catalog[song_index-1].source_filename;
+    vector<string> soung_text = readTextFromFile(path_to_file);
+
+    cin.ignore();
+    cout<<"Введите полный путь в который вы хотите сохранить песню: ";
+    // string path_to_file;
+    getline(cin,path_to_file);
+
+
+    writeTextToFile(path_to_file,soung_text);
+
+}
+
+
+void workWithUser(vector<Sounds> &song_catalog,string &db_dir_path)
+{
+    while (true)
+    {
+        cout<<"Доброго времени суток пользователь.\nВас приведствует программа \"Каталог текстов и песен\".\nВот вы можете сделать:\n1)Добавить новую песню.\n2)Вывести все существующие песни на экран.\n3)Удалить песню.\n4)Редактировать информацию о песне и текст песни.\n5)Найти все песни автора.\n6)Найти песни в тексте которых есть указаное вами слово.\n7)Вывести полностью текст песни.\n8)Сохранить текст песни в txt файл в указаный вами путь.\nДля того чтобы закончить введите любую другую цыфру.\nВаш выбор: ";
+        int choise;
+        cin>>choise;
+
+        cin.ignore();
+
+        switch (choise)
+        {
+            case 1:
+            {
+                createSound(db_dir_path,song_catalog);
+                break;
+            }
+
+            case 2:
+            {
+                displayAllSongs(song_catalog);
+                break;
+            }
+
+            case 3:
+            {
+                deleteSong(song_catalog);
+                break;
+            }
+
+            case 4:
+            {
+                editSong(song_catalog);
+                break;
+            }
+
+            case 5:
+            {
+                findSongsByAuthor(song_catalog);
+                break;
+            }
+
+            case 6:
+            {
+                findSongsByWord(song_catalog);
+                break;
+            }
+
+            case 7:
+            {
+                displayFullSong(song_catalog);
+                break;
+            }
+
+            case 8:
+            {
+                saveTextSongToFile(song_catalog);
+                break;
+            }
+        
+            default:
+                return;
+                break;
+        }
+    }
+}
 
 
 int main()
@@ -569,7 +667,7 @@ int main()
 
     loadSongs(db_dir_path,song_catalog);
 
-    displayAllSongs(song_catalog);
+    // displayAllSongs(song_catalog);
 
     // deleteSong(song_catalog);
 
@@ -581,7 +679,11 @@ int main()
 
     // findSongsByWord(song_catalog);
 
-    displayFullSong(song_catalog);
+    // displayFullSong(song_catalog);
+
+    // saveTextSongToFile(song_catalog);
+
+    workWithUser(song_catalog,db_dir_path);
 
 
     return 0;
