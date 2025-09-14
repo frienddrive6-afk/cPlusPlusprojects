@@ -298,22 +298,71 @@ void deleteSong(vector<Sounds> &song_catalog)
 }
 
 
-void editSong(vector<Sounds> &song_catalog)
+void updateAndRenameSong(Sounds &song_to_edit,const vector<string> &soung_text)
 {
-    cout<<"\nВведите номер песни изменить(начало с 1): ";
-    int redacted_index;
-    cin>>redacted_index;
 
-    ifstream fileR(song_catalog[redacted_index-1].source_filename);
-    if(!fileR.is_open())
+    string old_full_path = song_to_edit.source_filename;
+
+    string new_song_name = zamenaSpasNa_(song_to_edit.title);
+    string new_author_name = zamenaSpasNa_(song_to_edit.author);
+    string new_file_name = new_song_name + "_" + new_author_name + ".txt";
+
+    filesystem::path old_full_type_path = old_full_path;
+    
+    string new_full_path = old_full_type_path.parent_path().string() + "/" + new_file_name;
+
+
+    if(old_full_path != new_full_path)
+    {
+        filesystem::rename(old_full_path,new_full_path);
+    }
+
+    song_to_edit.source_filename = new_full_path;
+
+
+    ofstream fileW(song_to_edit.source_filename);
+    if(!fileW.is_open())
     {
         cout << "ОШИБКА при открытии файла!" << endl;
         return;
     }
 
-    vector<string> soung_text;
-    string line;
 
+
+    fileW<<"Название песни:"<<song_to_edit.title<<";"<<endl;
+    fileW<<"Имя автора:"<<song_to_edit.author<<";"<<endl;
+    fileW<<"Год выпуска:"<<song_to_edit.year<<";"<<endl;
+
+    for(int i = 0;i < 3;i++)
+    {
+        fileW<<endl;
+    }
+    fileW<<"-----------------------------"<<endl;
+
+    for(string linee : soung_text)
+    {
+        fileW<<linee<<endl;
+    }
+    fileW<<"-----------------------------"<<endl;
+
+    
+
+
+    fileW.close();
+}
+
+vector<string> readTextFromFile(string path_to_file)
+{
+    ifstream fileR(path_to_file);
+    if(!fileR.is_open())
+    {
+        cout << "ОШИБКА при открытии файла!" << endl;
+        return vector<string>();
+    }
+
+    vector<string> soung_text;
+
+    string line;
     bool is_started = false;
     while (getline(fileR,line))
     {
@@ -327,8 +376,32 @@ void editSong(vector<Sounds> &song_catalog)
             soung_text.push_back(line);
         }
     }
-    
+
+
+
     fileR.close();
+
+    return soung_text;
+}
+
+
+void editSong(vector<Sounds> &song_catalog)
+{
+    cout<<"\nВведите номер песни изменить(начало с 1): ";
+    int redacted_index;
+    cin>>redacted_index;
+
+    if (redacted_index < 1 || redacted_index > song_catalog.size()) {
+    cout << "Ошибка не верный номер песни" << endl;
+    return;
+}
+
+
+
+    vector<string> soung_text = readTextFromFile(song_catalog[redacted_index-1].source_filename);
+    Sounds &song_to_edit = song_catalog[redacted_index-1];
+
+
 
     cout<<"Введите параметр какой хотите изменить\n1)Название песни\n2)Имя автора\n3)Год выпуска\n4)Текст песни(Прийдется писать весь заново)\nВаш выбор: ";
     int vubor;
@@ -338,21 +411,26 @@ void editSong(vector<Sounds> &song_catalog)
     switch (vubor)
     {
         case 1:
+        {   
+            string song_name;
             cout<<"Введите новое название песни: ";
-            getline(cin,song_catalog[redacted_index-1].title);
+            getline(cin,song_to_edit.title);
             break;
+        }
         case 2:
+        {
             cout<<"Введите новое имя автора: ";
-            getline(cin,song_catalog[redacted_index-1].author);
+            getline(cin,song_to_edit.author);
             break;
+        }
         case 3:
+        {
             cout<<"Введите новый год выпуска: ";
-            cin>>song_catalog[redacted_index-1].year;
+            cin>>song_to_edit.year;
             break;
+        }
         case 4:
             soung_text.clear();
-
-            
 
             cout<<"Введите * для того что бы завершить"<<endl;
             while (true)
@@ -371,26 +449,7 @@ void editSong(vector<Sounds> &song_catalog)
 
     }
 
-    ofstream fileW(song_catalog[redacted_index-1].source_filename);
-
-    fileW<<"Название песни:"<<song_catalog[redacted_index-1].title<<";"<<endl;
-    fileW<<"Имя автора:"<<song_catalog[redacted_index-1].author<<";"<<endl;
-    fileW<<"Год выпуска:"<<song_catalog[redacted_index-1].year<<";"<<endl;
-
-    for(int i = 0;i < 3;i++)
-    {
-        fileW<<endl;
-    }
-    fileW<<"-----------------------------"<<endl;
-
-    for(string linee : soung_text)
-    {
-        fileW<<linee<<endl;
-    }
-    fileW<<"-----------------------------"<<endl;
-
-    fileW.close();
-
+    updateAndRenameSong(song_to_edit,soung_text);
 
 }
 
@@ -431,32 +490,7 @@ void findSongsByWord(vector<Sounds> &song_catalog)
     for(Sounds song: song_catalog)
     {
         string path_to_file = song.source_filename;
-
-        ifstream fileR(path_to_file);
-        if(!fileR.is_open())
-        {
-            cout << "ОШИБКА при открытии файла!" << endl;
-            return;
-        }
-
-
-        vector<string> soung_text;
-        string line;
-
-        bool is_started = false;
-        while (getline(fileR,line))
-        {
-            if(line == "-----------------------------")
-            {
-                is_started = !is_started;
-                continue;
-            }
-            if(is_started == true)
-            {
-                soung_text.push_back(line);
-            }
-        }
-
+        vector<string> soung_text = readTextFromFile(path_to_file);
 
         int count_this_word = 0;
         for(string linee : soung_text)
@@ -497,30 +531,10 @@ void displayFullSong(vector<Sounds> &song_catalog)
             cout<<"\n"<<endl;
 
             cout<<"----------Текст песни----------"<<endl;
+            
+            string file_path = song_catalog[number-1].source_filename;
+            vector<string> soung_text = readTextFromFile(file_path);
 
-            ifstream fileR(song_catalog[number-1].source_filename);
-            if(!fileR.is_open())
-            {
-                cout << "ОШИБКА при открытии файла!" << endl;
-            }
-
-
-            vector<string> soung_text;
-            string line;
-
-            bool is_started = false;
-            while (getline(fileR,line))
-            {
-                if(line == "-----------------------------")
-                {
-                    is_started = !is_started;
-                    continue;
-                }
-                if(is_started == true)
-                {
-                    soung_text.push_back(line);
-                }
-            }
 
             for(string linee : soung_text)
             {
@@ -529,7 +543,7 @@ void displayFullSong(vector<Sounds> &song_catalog)
 
             cout<<"----------Конец песни----------"<<endl;
 
-            fileR.close();
+            
 
             break;
         }
