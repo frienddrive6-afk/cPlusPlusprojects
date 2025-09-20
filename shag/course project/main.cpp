@@ -20,7 +20,9 @@ struct Sounds
 
 enum ScreenState {
     MAIN_MENU,
-    CREATESOUND,       
+    CREATESOUND, 
+    PRINTSOUND,
+    DELATESONG,      
     EXIT_PROGRAM
 };
 
@@ -112,7 +114,7 @@ string get_string_from_user(int y, int x, const string& prompt) {
 
 
 //Выводит песни на экран ncurses
-void show_song_list_screen(const vector<Sounds>& song_catalog) {
+void show_song_list_screen(const vector<Sounds>& song_catalog,ScreenState &screen_state ) {
     clear();
     int y, x;
     getmaxyx(stdscr, y, x);
@@ -137,25 +139,28 @@ void show_song_list_screen(const vector<Sounds>& song_catalog) {
     mvprintw(y - 1, 2, "Натисніть будь-яку клавішу, щоб повернутися...");
     refresh();
     getch();
+
+    screen_state = MAIN_MENU;
+
 }
 
 //Добавляет песню в вектор через ncurses
-void add_song_screen(vector<Sounds>& song_catalog) {
-    clear();
+// void add_song_screen(vector<Sounds>& song_catalog) {
+//     clear();
     
-    Sounds new_song;
+//     Sounds new_song;
     
-    new_song.title = get_string_from_user(3, 2, "Введіть назву: ");
-    new_song.author = get_string_from_user(4, 2, "Введіть автора: ");
-    string year_str = get_string_from_user(5, 2, "Введіть рік: ");
-    new_song.year = stoi(year_str); 
+//     new_song.title = get_string_from_user(3, 2, "Введіть назву: ");
+//     new_song.author = get_string_from_user(4, 2, "Введіть автора: ");
+//     string year_str = get_string_from_user(5, 2, "Введіть рік: ");
+//     new_song.year = stoi(year_str); 
 
-    song_catalog.push_back(new_song);
+//     song_catalog.push_back(new_song);
 
-    mvprintw(8, 2, "Пісню '%s' успішно додано! (натисніть Enter)", new_song.title.c_str());
-    refresh();
-    getch();
-}
+//     mvprintw(8, 2, "Пісню '%s' успішно додано! (натисніть Enter)", new_song.title.c_str());
+//     refresh();
+//     getch();
+// }
 
 
 
@@ -612,16 +617,39 @@ void displayAllSongs(vector<Sounds> &song_catalog)
     cout<<"\033[0m"<<endl;
 }
 
-void deleteSong(vector<Sounds> &song_catalog)
+void deleteSong(vector<Sounds> &song_catalog,const int choice,ScreenState* screen_state = nullptr)
 {
-    cout<<"\nВведите номер песни какую ходите удалить(начало с 1): ";
     int delated_index;
-    cin>>delated_index;
+    switch (choice)
+    {
+        case 1:
+        {
+            cout<<"\nВведите номер песни какую ходите удалить(начало с 1): ";
+            cin>>delated_index;
+            break;
+        }
+
+        case 2:
+        {
+            clear();
+            delated_index = stoi(get_string_from_user(0,0,"Введите номер песни какую ходите удалить(начало с 1): "));
+            break;
+        }
+
+    }
+    
 
     string delate_path_file = song_catalog[delated_index-1].source_filename;
 
     song_catalog.erase(song_catalog.begin()+delated_index-1);
     filesystem::remove(delate_path_file);
+
+    if(screen_state != nullptr)
+    {
+
+        *screen_state = MAIN_MENU;
+    }
+
 }
 
 
@@ -923,7 +951,7 @@ void workWithUser(vector<Sounds> &song_catalog,string &db_dir_path)
 
                     case 3:
                     {
-                        deleteSong(song_catalog);
+                        deleteSong(song_catalog,choice);
                         break;
                     }
 
@@ -1000,6 +1028,14 @@ void workWithUser(vector<Sounds> &song_catalog,string &db_dir_path)
                         {
                             current_screen = CREATESOUND;
 
+                        }else if(show_menu_res == 1)
+                        {
+
+                            current_screen = PRINTSOUND;
+
+                        }else if(show_menu_res ==2)
+                        {
+                            current_screen = DELATESONG;
 
                         }else if(show_menu_res == 8 || show_menu_res == -1)
                         {
@@ -1017,6 +1053,19 @@ void workWithUser(vector<Sounds> &song_catalog,string &db_dir_path)
                         break;
                     }
 
+                    case PRINTSOUND:
+                    {
+                        show_song_list_screen(song_catalog,current_screen);
+
+                        break;
+                    }
+
+                    case DELATESONG:
+                    {
+
+                        deleteSong(song_catalog,choice,&current_screen);
+                        break;
+                    }
 
 
 
