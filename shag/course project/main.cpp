@@ -48,6 +48,7 @@ void saveSongToFile(const Sounds& song, const vector<string>& lyrics)
 }
 
 
+
 void parseSongFile(string &db_dir_path,vector<Sounds> &song_catalog)
 {
     if(!filesystem::is_empty(db_dir_path))
@@ -208,8 +209,7 @@ string zamenaSpasNa_(string &start_name)
 
 void createSound(string &db_dir_path,vector<Sounds> &song_catalog)
 {
-    // string title,author_name;
-    // int year;
+
     Sounds new_song;
     vector<string> lyrics;
 
@@ -228,22 +228,6 @@ void createSound(string &db_dir_path,vector<Sounds> &song_catalog)
 
     new_song.source_filename = db_dir_path+"/"+titleNoneSpase+"_"+authorNoneSpase+".txt";
 
-    // ofstream fileW(new_song.source_filename);
-    // if (!fileW.is_open()) {
-    //     cout << "ОШИБКА при открытии файла!" << endl;
-    //     return;
-    // }
-
-
-    // fileW<<"Название песни:"<<new_song.title<<";"<<endl;
-    // fileW<<"Имя автора:"<<new_song.author<<";"<<endl;
-    // fileW<<"Год выпуска:"<<new_song.year<<";"<<endl;
-
-    // for(int i = 0;i < 3;i++)
-    // {
-    //     fileW<<endl;
-    // }
-    // fileW<<"-----------------------------"<<endl;
     
     cout<<"теперь надо добавить текст тут два варианта\n1)добавление в ручную\n2)Добавление из файла(указать полный путь к файлу с текстом)\nВаш выбор: ";
     int vubor;
@@ -260,7 +244,6 @@ void createSound(string &db_dir_path,vector<Sounds> &song_catalog)
             {
                 break;
             }else{
-                // fileW<<line<<endl;
                 lyrics.push_back(line);
             }
         }
@@ -276,7 +259,6 @@ void createSound(string &db_dir_path,vector<Sounds> &song_catalog)
         if(!fileR.is_open())
         {
             cout << "ОШИБКА при открытии файла!" << endl;
-            // fileW.close();
             return;
         }
 
@@ -284,7 +266,6 @@ void createSound(string &db_dir_path,vector<Sounds> &song_catalog)
 
         while (getline(fileR,line))
         {
-            // fileW<<line<<endl;
             lyrics.push_back(line);
         }
         
@@ -292,12 +273,10 @@ void createSound(string &db_dir_path,vector<Sounds> &song_catalog)
 
 
 
-    // fileW<<"-----------------------------"<<endl;
 
     song_catalog.push_back(new_song);
 
     saveSongToFile(new_song,lyrics);
-    // fileW.close();
 }
 
 
@@ -337,7 +316,6 @@ void deleteSong(vector<Sounds> &song_catalog)
 
 void updateAndRenameSong(Sounds &song_to_edit,const vector<string> &soung_text)
 {
-    // vector<string> lyrics;
 
     string old_full_path = song_to_edit.source_filename;
 
@@ -356,38 +334,6 @@ void updateAndRenameSong(Sounds &song_to_edit,const vector<string> &soung_text)
     }
 
     song_to_edit.source_filename = new_full_path;
-
-
-    // ofstream fileW(song_to_edit.source_filename);
-    // if(!fileW.is_open())
-    // {
-    //     cout << "ОШИБКА при открытии файла!" << endl;
-    //     return;
-    // }
-
-
-
-    // fileW<<"Название песни:"<<song_to_edit.title<<";"<<endl;
-    // fileW<<"Имя автора:"<<song_to_edit.author<<";"<<endl;
-    // fileW<<"Год выпуска:"<<song_to_edit.year<<";"<<endl;
-
-    // for(int i = 0;i < 3;i++)
-    // {
-    //     fileW<<endl;
-    // }
-    // fileW<<"-----------------------------"<<endl;
-
-    // for(string linee : soung_text)
-    // {
-    //     lyrics.push_back(linee);
-    //     // fileW<<linee<<endl;
-    // }
-    // fileW<<"-----------------------------"<<endl;
-
-    
-
-
-    // fileW.close();
 
     saveSongToFile(song_to_edit, soung_text);
 }
