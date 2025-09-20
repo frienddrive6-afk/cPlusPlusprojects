@@ -4,6 +4,7 @@
 #include <cstdlib> 
 #include <vector>
 #include <filesystem> 
+#include <ncurses.h>
 
 using namespace std;
 
@@ -16,6 +17,230 @@ struct Sounds
     string source_filename;
 
 };
+
+enum ScreenState {
+    MAIN_MENU,
+    CREATESOUND,       
+    EXIT_PROGRAM
+};
+
+//======================NCURSES FUNCSION START========================
+
+
+
+//Создает по наданым параметрам меню с выбором, выбор осуществляется с помошью стрелочек 
+int show_menu(const string& title, const vector<string>& items) {
+    int highlight = 0;
+    int key_pressed;
+
+    int max_len = 0;
+    for (const string& item : items) 
+    {
+        if (item.length() > max_len) 
+        {
+            max_len = item.length();
+        }
+    }
+
+    while (true) {
+        int y, x;
+        getmaxyx(stdscr, y, x);
+        clear();
+        
+        mvprintw(2, (x - title.length()) / 2, "%s", title.c_str());
+        
+        int start_x = (x - max_len) / 2;
+
+        for (int i = 0; i < items.size(); ++i) {
+            if (i == highlight) attron(A_REVERSE);
+            
+            mvprintw(4 + i, start_x, "%s", items[i].c_str());
+            
+            if (i == highlight) attroff(A_REVERSE);
+        }
+        refresh();
+
+        key_pressed = getch();
+        switch (key_pressed) {
+            case KEY_UP:
+                if (highlight > 0) highlight--;
+                break;
+            case KEY_DOWN:
+                if (highlight < items.size() - 1) highlight++;
+                break;
+            case 10: case KEY_ENTER:
+                return highlight;
+            case 27: // Esc
+                return -1;
+        }
+    }
+}
+
+//Функция позволяет получитать информацию в интерфейсе ncurses в виде ввода текста аналог cin
+string get_string_from_user(int y, int x, const string& prompt) {
+    string result = "";
+    int ch;
+
+    mvprintw(y, x, "%s", prompt.c_str());
+
+    curs_set(1);
+    echo();
+    
+    move(y, x + prompt.length());
+    refresh(); 
+
+    while ((ch = getch()) != '\n' && ch != KEY_ENTER) {
+        if (ch == KEY_BACKSPACE || ch == 127) {
+            if (!result.empty()) {
+                result.pop_back();
+                
+                int current_y, current_x;
+                getyx(stdscr, current_y, current_x); 
+                mvaddch(current_y, current_x, ' ');   
+                move(current_y, current_x);           
+            }
+        } else {
+            result += ch;
+        }
+    }
+    
+    noecho();
+    curs_set(0);
+
+    return result;
+}
+
+
+//Выводит песни на экран ncurses
+void show_song_list_screen(const vector<Sounds>& song_catalog) {
+    clear();
+    int y, x;
+    getmaxyx(stdscr, y, x);
+
+    mvprintw(1, 2, "--- Список всіх пісень ---");
+
+    if (song_catalog.empty()) {
+        mvprintw(3, 2, "Каталог порожній.");
+    } else {
+        for (int i = 0; i < song_catalog.size(); ++i) {
+            if (3 + i >= y - 1) { 
+                mvprintw(y - 2, 2, "...");
+                break;
+            }
+            mvprintw(3 + i, 2, "%d. %s - %s (%d)", i + 1,
+                     song_catalog[i].author.c_str(),
+                     song_catalog[i].title.c_str(),
+                     song_catalog[i].year);
+        }
+    }
+
+    mvprintw(y - 1, 2, "Натисніть будь-яку клавішу, щоб повернутися...");
+    refresh();
+    getch();
+}
+
+//Добавляет песню в вектор через ncurses
+void add_song_screen(vector<Sounds>& song_catalog) {
+    clear();
+    
+    Sounds new_song;
+    
+    new_song.title = get_string_from_user(3, 2, "Введіть назву: ");
+    new_song.author = get_string_from_user(4, 2, "Введіть автора: ");
+    string year_str = get_string_from_user(5, 2, "Введіть рік: ");
+    new_song.year = stoi(year_str); 
+
+    song_catalog.push_back(new_song);
+
+    mvprintw(8, 2, "Пісню '%s' успішно додано! (натисніть Enter)", new_song.title.c_str());
+    refresh();
+    getch();
+}
+
+
+
+
+vector<string> get_lyrics_from_user(int start_y, int start_x) {
+    
+    attron(A_BOLD);
+    mvprintw(start_y, start_x, "Введіть текст. Натисніть Ctrl+D для завершення.");
+    attroff(A_BOLD);
+
+    start_y++; 
+
+    vector<string> all_lines;
+    string current_line = "";
+    int ch;
+    
+    curs_set(1);
+    echo();
+
+    int y = start_y;
+    int x = start_x;
+    move(y, x);
+    refresh();
+
+    while (true) {
+        ch = getch();
+
+        if (ch == 4) { //Нажат ли ctrl + D
+            break; 
+        }
+
+        switch (ch) {
+            case KEY_ENTER:
+            case 10: // Enter
+                all_lines.push_back(current_line); 
+                current_line.clear();              
+                y++;                               
+                x = start_x;
+                move(y, x);
+                break;
+
+            case KEY_BACKSPACE:
+            case 127: // Backspace
+                if (!current_line.empty()) {
+                    current_line.pop_back();
+
+                    int current_y, current_x;
+                    getyx(stdscr, current_y, current_x);
+                    mvaddch(current_y, current_x, ' ');
+                    move(current_y, current_x);
+                }
+                break;
+            
+            default: 
+                
+                int term_y, term_x;
+                getmaxyx(stdscr, term_y, term_x);
+                if (x + current_line.length() < term_x - 1) {
+                    current_line += ch;
+                }
+                break;
+        }
+        refresh();
+    }
+    
+    if (!current_line.empty()) {
+        all_lines.push_back(current_line);
+    }
+    
+    noecho();
+    curs_set(0);
+
+    return all_lines;
+}
+
+
+
+
+
+
+
+
+//======================NCURSES FUNCSION END========================
+
+
 
 
 void saveSongToFile(const Sounds& song, const vector<string>& lyrics)
@@ -207,58 +432,138 @@ string zamenaSpasNa_(string &start_name)
     return end_name;
 }
 
-void createSound(string &db_dir_path,vector<Sounds> &song_catalog)
+void createSound(string &db_dir_path,vector<Sounds> &song_catalog,const int choice, ScreenState* screen_state_ptr = nullptr)
 {
 
     Sounds new_song;
     vector<string> lyrics;
 
-    cout<<"Введите название песни: ";
-    getline(cin,new_song.title);
+    switch (choice)
+    {
+        case 1:
+        {   
+            cout<<"Введите название песни: ";
+            getline(cin,new_song.title);
 
-    cout<<"Введите имя автора: ";
-    getline(cin,new_song.author);
+            cout<<"Введите имя автора: ";
+            getline(cin,new_song.author);
 
-    cout<<"Введите год выпуска: ";
-    cin>>new_song.year;
-    cin.ignore();
+            cout<<"Введите год выпуска: ";
+            cin>>new_song.year;
+            cin.ignore();
+
+            break;
+        }
+        
+        case 2:
+        {
+            clear();
+            new_song.title = get_string_from_user(0, 0, "Введите название песни: ");
+            
+            clear();
+            new_song.author = get_string_from_user(0, 0, "Введите имя автора: ");
+
+            clear();
+            new_song.year = stoi(get_string_from_user(0, 0, "Введите год выпуска: "));
+
+            break;
+        }
+
+    }
+    
 
     string titleNoneSpase = zamenaSpasNa_(new_song.title);
     string authorNoneSpase = zamenaSpasNa_(new_song.author);
 
     new_song.source_filename = db_dir_path+"/"+titleNoneSpase+"_"+authorNoneSpase+".txt";
 
-    
-    cout<<"теперь надо добавить текст тут два варианта\n1)добавление в ручную\n2)Добавление из файла(указать полный путь к файлу с текстом)\nВаш выбор: ";
+
     int vubor;
-    cin>>vubor;
-    cin.ignore(); 
+    switch (choice)
+    {
+        case 1:
+        { 
+            cout<<"теперь надо добавить текст тут два варианта\n1)добавление в ручную\n2)Добавление из файла(указать полный путь к файлу с текстом)\nВаш выбор: ";
+            cin>>vubor;
+            cin.ignore(); 
+            break;
+        }
+
+        case 2:
+        {
+            vector<string> items = {"1)добавление в ручную","2)Добавление из файла(указать полный путь к файлу с текстом)"};
+            vubor = show_menu("Надо добавить текст тут два варианта",items)+1;
+            break;
+        }
+
+    }
+
+
     if(vubor == 1)
     {
-        cout<<"Введите * для того что бы завершить"<<endl;
-        while (true)
+        switch (choice)
         {
-            string line;
-            getline(cin,line);
-            if(line == "*")
-            {
+            case 1:
+            { 
+                cout<<"Введите * для того что бы завершить"<<endl;
+                while (true)
+                {
+                    string line;
+                    getline(cin,line);
+                    if(line == "*")
+                    {
+                        break;
+                    }else{
+                        lyrics.push_back(line);
+                    }
+                }
                 break;
-            }else{
-                lyrics.push_back(line);
             }
+            case 2:
+            {
+                clear();
+                lyrics = get_lyrics_from_user(0, 0);
+
+
+                break;
+            }
+
+
         }
         
     }else if(vubor == 2)
     {
+        
         string fullPathToSoundText;
 
-        cout<<"Введите полны путь к файлу: ";
-        getline(cin, fullPathToSoundText);
+
+        switch (choice)
+        {
+            case 1:
+            { 
+                cout<<"Введите полны путь к файлу: ";
+                getline(cin, fullPathToSoundText);
+                break;
+            }
+
+            case 2:
+            {
+                clear();
+                fullPathToSoundText = get_string_from_user(0, 0, "Введите полны путь к файлу: ");
+                break;
+            }
+
+        }
+
+
 
         ifstream fileR(fullPathToSoundText);
         if(!fileR.is_open())
         {
-            cout << "ОШИБКА при открытии файла!" << endl;
+            if(choice != 2)
+            {
+                cout << "ОШИБКА при открытии файла!" << endl;
+            }
             return;
         }
 
@@ -277,6 +582,12 @@ void createSound(string &db_dir_path,vector<Sounds> &song_catalog)
     song_catalog.push_back(new_song);
 
     saveSongToFile(new_song,lyrics);
+
+    if(screen_state_ptr != nullptr)
+    {
+        *screen_state_ptr = MAIN_MENU;
+    }
+
 }
 
 
@@ -578,74 +889,168 @@ void saveTextSongToFile(vector<Sounds> &song_catalog)
 
 void workWithUser(vector<Sounds> &song_catalog,string &db_dir_path)
 {
-    while (true)
+
+    cout<<"Выберети тип интерфейса\n1)Стандартный(старый)\n2)Через nurses(Новый)\nВаш выбор: ";
+    int choice;
+    cin>>choice;
+
+    switch (choice)
     {
-        cout<<"Доброго времени суток пользователь.\nВас приведствует программа \"Каталог текстов и песен\".\nВот вы можете сделать:\n1)Добавить новую песню.\n2)Вывести все существующие песни на экран.\n3)Удалить песню.\n4)Редактировать информацию о песне и текст песни.\n5)Найти все песни автора.\n6)Найти песни в тексте которых есть указаное вами слово.\n7)Вывести полностью текст песни.\n8)Сохранить текст песни в txt файл в указаный вами путь.\nДля того чтобы закончить введите любую другую цыфру.\nВаш выбор: ";
-        int choise;
-        cin>>choise;
-
-        cin.ignore();
-
-        switch (choise)
+        case 1:
         {
-            case 1:
+
+            while (true)
             {
-                createSound(db_dir_path,song_catalog);
-                break;
+                cout<<"Доброго времени суток пользователь.\nВас приведствует программа \"Каталог текстов и песен\".\nВот вы можете сделать:\n1)Добавить новую песню.\n2)Вывести все существующие песни на экран.\n3)Удалить песню.\n4)Редактировать информацию о песне и текст песни.\n5)Найти все песни автора.\n6)Найти песни в тексте которых есть указаное вами слово.\n7)Вывести полностью текст песни.\n8)Сохранить текст песни в txt файл в указаный вами путь.\nДля того чтобы закончить введите любую другую цыфру.\nВаш выбор: ";
+                int choise;
+                cin>>choise;
+
+                cin.ignore();
+
+                switch (choise)
+                {
+                    case 1:
+                    {
+                        createSound(db_dir_path,song_catalog,choice);
+                        break;
+                    }
+
+                    case 2:
+                    {
+                        displayAllSongs(song_catalog);
+                        break;
+                    }
+
+                    case 3:
+                    {
+                        deleteSong(song_catalog);
+                        break;
+                    }
+
+                    case 4:
+                    {
+                        editSong(song_catalog);
+                        break;
+                    }
+
+                    case 5:
+                    {
+                        findSongsByAuthor(song_catalog);
+                        break;
+                    }
+
+                    case 6:
+                    {
+                        findSongsByWord(song_catalog);
+                        break;
+                    }
+
+                    case 7:
+                    {
+                        displayFullSong(song_catalog);
+                        break;
+                    }
+
+                    case 8:
+                    {
+                        saveTextSongToFile(song_catalog);
+                        break;
+                    }
+                
+                    default:
+                        return;
+                        break;
+                }
             }
 
-            case 2:
-            {
-                displayAllSongs(song_catalog);
-                break;
-            }
-
-            case 3:
-            {
-                deleteSong(song_catalog);
-                break;
-            }
-
-            case 4:
-            {
-                editSong(song_catalog);
-                break;
-            }
-
-            case 5:
-            {
-                findSongsByAuthor(song_catalog);
-                break;
-            }
-
-            case 6:
-            {
-                findSongsByWord(song_catalog);
-                break;
-            }
-
-            case 7:
-            {
-                displayFullSong(song_catalog);
-                break;
-            }
-
-            case 8:
-            {
-                saveTextSongToFile(song_catalog);
-                break;
-            }
-        
-            default:
-                return;
-                break;
+            break;
         }
+
+        case 2:
+        {
+            setlocale(LC_ALL, "");
+            initscr();
+            noecho();
+            cbreak();
+            keypad(stdscr, true);
+            curs_set(0);
+
+            vector<string> main_menu_items = { 
+                "1)Добавить новую песню",
+                "2)Вывести все существующие песни на экран",
+                "3)Удалить песню",
+                "4)Редактировать информацию о песне и текст песни",
+                "5)Найти все песни автора",
+                "6)Найти песни в тексте которых есть указаное вами слово",
+                "7)Вывести полностью текст песни",
+                "8)Сохранить текст песни в txt файл в указаный вами путь",
+                "Закончить"};
+
+
+            ScreenState current_screen = MAIN_MENU;
+
+            while (current_screen != EXIT_PROGRAM) {
+
+                switch (current_screen)
+                {
+                    case MAIN_MENU:
+                    {
+                        int show_menu_res = show_menu("Главное меню программа \"Каталог текстов и песен\"", main_menu_items);
+                        if(show_menu_res == 0)
+                        {
+                            current_screen = CREATESOUND;
+
+
+                        }else if(show_menu_res == 8 || show_menu_res == -1)
+                        {
+                            current_screen = EXIT_PROGRAM;
+                        }
+
+
+                        break;
+                    }
+
+                    case CREATESOUND:
+                    {
+
+                        createSound(db_dir_path,song_catalog,choice,&current_screen);
+                        break;
+                    }
+
+
+
+
+                }
+
+
+
+
+
+            }
+
+
+
+
+
+
+            endwin();
+            break;
+        }
+        
+        default:
+        {
+            cout<<""<<endl;
+            break;
+        }
+
     }
+    
 }
 
 
 int main()
 {
+    setlocale(LC_ALL, "");
 
     string db_dir_path = "./sound";
 
