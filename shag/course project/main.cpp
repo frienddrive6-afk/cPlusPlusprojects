@@ -25,7 +25,9 @@ enum ScreenState {
     DELATESONG,
     EDITSONG,
     FINDBYAUTHOR,
-    FINDBYWORD,      
+    FINDBYWORD,
+    TEXTONDISPLAY,
+    SAVETOFILE,      
     EXIT_PROGRAM
 };
 
@@ -220,6 +222,45 @@ vector<string> get_lyrics_from_user(int start_y, int start_x) {
 }
 
 
+
+void printLyricWithncurses(const Sounds& sound,const vector<string>& lyric)
+{
+    clear();
+
+    int line_len = 0;
+    for(string line: lyric)
+    {    
+        if(line_len <line.size())
+        {
+            line_len = line.size();
+        }
+    }
+
+    int y,x;
+    getmaxyx(stdscr,y,x);
+    
+    int start_x = (x/2)-(line_len/2);
+
+    int y_current = 1;
+
+    mvprintw(y_current++,start_x,"Название песни: %s",sound.title.c_str());
+    mvprintw(y_current++,start_x,"Имя автора: %s",sound.author.c_str());
+    mvprintw(y_current++,start_x,"Год выпуска: %d",sound.year);
+    y_current++;
+
+    for(string line : lyric)
+    {
+        mvprintw(y_current++,start_x,"%s",line.c_str());
+        if(y_current == y-2)
+        {
+            break;
+        }
+    }
+
+    mvprintw(y,0,"Для того что бы продолжить нажмите на любую клавишу ....");
+    refresh();
+    getch();
+}
 
 
 
@@ -871,6 +912,7 @@ void editSong(vector<Sounds> &song_catalog,const int choice,ScreenState* screen_
 
                 case 2:
                 {
+                    clear();
                     soung_text = get_lyrics_from_user(0,0);
                     break;
                 }
@@ -1089,38 +1131,77 @@ void findSongsByWord(vector<Sounds> &song_catalog,const int choice,ScreenState* 
 }
 
 
-void displayFullSong(vector<Sounds> &song_catalog)
+void displayFullSong(vector<Sounds> &song_catalog,const int choice,ScreenState* screen_state = nullptr)
 {
-    cout<<"Выбере способ отображение песни\n1)Вывести в терминал\n2)Открыть в текстовом редакторе по умолчанию\nВаш выбор: ";
     int vubor;
-    cin>>vubor;
-
-
-    cout<<"Выберете номер песню которую хотите вывести(Начинается с 1): ";
     int number;
-    cin>>number;
+
+    switch (choice)
+    {
+        case 1:
+        {
+            cout<<"Выбере способ отображение песни\n1)Вывести в терминал\n2)Открыть в текстовом редакторе по умолчанию\nВаш выбор: ";
+            cin>>vubor;
+
+            cout<<"Выберете номер песню которую хотите вывести(Начинается с 1): ";
+            cin>>number;
+
+            break;
+        }
+        case 2:
+        {
+            clear();
+            vector<string> items = {"1)Вывести в терминал","2)Открыть в текстовом редакторе по умолчанию"};
+
+            vubor = show_menu("Выбере способ отображение песни:", items)+1;
+
+            clear();
+            number = stoi(get_string_from_user(0,0,"Выберете номер песню которую хотите вывести(Начинается с 1): "));
+            
+            break;
+        }
+
+    }
+    
 
     switch (vubor)
     {
         case 1:
-            {
-            cout<<"Название песни: "<<song_catalog[number-1].title<<endl;
-            cout<<"Имя автора: "<<song_catalog[number-1].author<<endl;
-            cout<<"Год выпуска: "<<song_catalog[number-1].year<<endl;
-            cout<<"\n"<<endl;
+            {   
+                string file_path = song_catalog[number-1].source_filename;
+                vector<string> soung_text = readTextFromFile(file_path);
+                switch (choice)
+                {
+                    case 1:
+                    {
+                        cout<<"Название песни: "<<song_catalog[number-1].title<<endl;
+                        cout<<"Имя автора: "<<song_catalog[number-1].author<<endl;
+                        cout<<"Год выпуска: "<<song_catalog[number-1].year<<endl;
+                        cout<<"\n"<<endl;
 
-            cout<<"----------Текст песни----------"<<endl;
-            
-            string file_path = song_catalog[number-1].source_filename;
-            vector<string> soung_text = readTextFromFile(file_path);
+                        cout<<"----------Текст песни----------"<<endl;
+                        
+                        
+                        
 
 
-            for(string linee : soung_text)
-            {
-                cout<<linee<<endl;
-            }
+                        for(string linee : soung_text)
+                        {
+                            cout<<linee<<endl;
+                        }
 
-            cout<<"----------Конец песни----------"<<endl;
+                        cout<<"----------Конец песни----------"<<endl;
+
+                        break;
+                    }
+
+                    case 2:
+                    {
+                        printLyricWithncurses(song_catalog[number-1],soung_text);
+                        break;
+                    }
+                
+                }
 
             
 
@@ -1133,25 +1214,72 @@ void displayFullSong(vector<Sounds> &song_catalog)
             break;
         }
     }
+
+    if(screen_state != nullptr)
+    {
+        *screen_state = MAIN_MENU;
+    }
+
 }
 
 
-void saveTextSongToFile(vector<Sounds> &song_catalog)
+void saveTextSongToFile(vector<Sounds> &song_catalog,const int choice,ScreenState* screen_state = nullptr)
 {
-    cout<<"Выберете песню которую хотите сохранить: ";
     int song_index;
-    cin>>song_index;
+    switch (choice)
+    {
+        case 1:
+        {
+            cout<<"Выберете песню которую хотите сохранить: ";
+            cin>>song_index;
+            cin.ignore();
+            break;
+        }
+
+        case 2:
+        {
+            clear();
+            song_index = stoi(get_string_from_user(0,0,"Выберете песню которую хотите сохранить: "));
+
+            break;
+        }
+    
+
+    }
+
+    
 
     string path_to_file = song_catalog[song_index-1].source_filename;
     vector<string> soung_text = readTextFromFile(path_to_file);
 
-    cin.ignore();
-    cout<<"Введите полный путь в который вы хотите сохранить песню: ";
-    // string path_to_file;
-    getline(cin,path_to_file);
+
+    switch (choice)
+    {
+        case 1:
+        {
+            cout<<"Введите полный путь в который вы хотите сохранить песню: ";
+            getline(cin,path_to_file);
+            break;
+        }
+
+        case 2:
+        {
+            clear();
+            path_to_file = get_string_from_user(0,0,"Введите полный путь в который вы хотите сохранить песню: ");
+
+            break;
+        }
+    
+
+    }
 
 
     writeTextToFile(path_to_file,soung_text);
+
+    if(screen_state != nullptr)
+    {
+        *screen_state = MAIN_MENU;
+    }
 
 }
 
@@ -1216,13 +1344,13 @@ void workWithUser(vector<Sounds> &song_catalog,string &db_dir_path)
 
                     case 7:
                     {
-                        displayFullSong(song_catalog);
+                        displayFullSong(song_catalog,choice);
                         break;
                     }
 
                     case 8:
                     {
-                        saveTextSongToFile(song_catalog);
+                        saveTextSongToFile(song_catalog,choice);
                         break;
                     }
                 
@@ -1289,6 +1417,14 @@ void workWithUser(vector<Sounds> &song_catalog,string &db_dir_path)
                         }else if(show_menu_res == 5)
                         {
                             current_screen = FINDBYWORD;
+                        }else if(show_menu_res == 6)
+                        {
+                            current_screen = TEXTONDISPLAY;
+
+                        }else if(show_menu_res == 7)
+                        {
+                            current_screen = SAVETOFILE;
+
                         }else if(show_menu_res == 8 || show_menu_res == -1)
                         {
                             current_screen = EXIT_PROGRAM;
@@ -1338,6 +1474,17 @@ void workWithUser(vector<Sounds> &song_catalog,string &db_dir_path)
                         break;
                     }
 
+                    case TEXTONDISPLAY:
+                    {
+                        displayFullSong(song_catalog,choice,&current_screen);
+                        break;
+                    }
+
+                    case SAVETOFILE:
+                    {
+                        saveTextSongToFile(song_catalog,choice,&current_screen);
+                        break;
+                    }
 
 
                 }
