@@ -22,7 +22,9 @@ enum ScreenState {
     MAIN_MENU,
     CREATESOUND, 
     PRINTSOUND,
-    DELATESONG,      
+    DELATESONG,
+    EDITSONG,
+    FINDBYAUTHOR,      
     EXIT_PROGRAM
 };
 
@@ -144,26 +146,6 @@ void show_song_list_screen(const vector<Sounds>& song_catalog,ScreenState &scree
 
 }
 
-//Добавляет песню в вектор через ncurses
-// void add_song_screen(vector<Sounds>& song_catalog) {
-//     clear();
-    
-//     Sounds new_song;
-    
-//     new_song.title = get_string_from_user(3, 2, "Введіть назву: ");
-//     new_song.author = get_string_from_user(4, 2, "Введіть автора: ");
-//     string year_str = get_string_from_user(5, 2, "Введіть рік: ");
-//     new_song.year = stoi(year_str); 
-
-//     song_catalog.push_back(new_song);
-
-//     mvprintw(8, 2, "Пісню '%s' успішно додано! (натисніть Enter)", new_song.title.c_str());
-//     refresh();
-//     getch();
-// }
-
-
-
 
 vector<string> get_lyrics_from_user(int start_y, int start_x) {
     
@@ -248,12 +230,15 @@ vector<string> get_lyrics_from_user(int start_y, int start_x) {
 
 
 
-void saveSongToFile(const Sounds& song, const vector<string>& lyrics)
+void saveSongToFile(const Sounds& song, const vector<string>& lyrics,const int choice)
 {
 
     ofstream fileW(song.source_filename);
     if (!fileW.is_open()) {
-        cout << "ОШИБКА при открытии файла!" << endl;
+        if(choice == 1)
+        {
+            cout << "ОШИБКА при открытии файла!" << endl;
+        }
         return;
     }
 
@@ -586,7 +571,7 @@ void createSound(string &db_dir_path,vector<Sounds> &song_catalog,const int choi
 
     song_catalog.push_back(new_song);
 
-    saveSongToFile(new_song,lyrics);
+    saveSongToFile(new_song,lyrics,choice);
 
     if(screen_state_ptr != nullptr)
     {
@@ -653,7 +638,7 @@ void deleteSong(vector<Sounds> &song_catalog,const int choice,ScreenState* scree
 }
 
 
-void updateAndRenameSong(Sounds &song_to_edit,const vector<string> &soung_text)
+void updateAndRenameSong(Sounds &song_to_edit,const vector<string> &soung_text,const int choice)
 {
 
     string old_full_path = song_to_edit.source_filename;
@@ -674,7 +659,7 @@ void updateAndRenameSong(Sounds &song_to_edit,const vector<string> &soung_text)
 
     song_to_edit.source_filename = new_full_path;
 
-    saveSongToFile(song_to_edit, soung_text);
+    saveSongToFile(song_to_edit, soung_text,choice);
 }
 
 vector<string> readTextFromFile(string &path_to_file)
@@ -722,15 +707,40 @@ void writeTextToFile(string &path_to_file,const vector<string> &soung_text)
     fileW.close();
 }
 
-void editSong(vector<Sounds> &song_catalog)
+void editSong(vector<Sounds> &song_catalog,const int choice,ScreenState* screen_state = nullptr)
 {
-    cout<<"\nВведите номер песни изменить(начало с 1): ";
+
     int redacted_index;
-    cin>>redacted_index;
+    switch (choice)
+    {
+        case 1:
+        {
+            cout<<"\nВведите номер песни изменить(начало с 1): ";
+            cin>>redacted_index;
+            break;
+        }
+
+        case 2:
+        {
+            clear();
+            redacted_index = stoi(get_string_from_user(0, 0,"Введите номер песни изменить(начало с 1): "));
+            break;
+        }
+    
+
+    }
+    
+    
+    
+
+
 
     if (redacted_index < 1 || redacted_index > song_catalog.size()) {
-    cout << "Ошибка не верный номер песни" << endl;
-    return;
+        if(choice == 1)
+        {
+            cout << "Ошибка не верный номер песни" << endl;
+        }
+        return;
     }
 
 
@@ -738,82 +748,253 @@ void editSong(vector<Sounds> &song_catalog)
     vector<string> soung_text = readTextFromFile(song_catalog[redacted_index-1].source_filename);
     Sounds &song_to_edit = song_catalog[redacted_index-1];
 
-
-
-    cout<<"Введите параметр какой хотите изменить\n1)Название песни\n2)Имя автора\n3)Год выпуска\n4)Текст песни(Прийдется писать весь заново)\nВаш выбор: ";
     int vubor;
-    cin>>vubor;
 
-    cin.ignore();
+    switch (choice)
+    {
+        case 1:
+        {
+            cout<<"Введите параметр какой хотите изменить\n1)Название песни\n2)Имя автора\n3)Год выпуска\n4)Текст песни(Прийдется писать весь заново)\nВаш выбор: ";
+            cin>>vubor;
+            cin.ignore();
+            break;
+        }
+
+        case 2:
+        {
+            vector<string> items_menu = {"1)Название песни","2)Имя автора","3)Год выпуска","4)Текст песни(Прийдется писать весь заново)"};
+            vubor = show_menu("Параметр какой хотите изменить", items_menu)+1;
+            break;
+        }
+    
+    }
+
+    
+
+    
     switch (vubor)
     {
         case 1:
         {   
-            string song_name;
-            cout<<"Введите новое название песни: ";
-            getline(cin,song_to_edit.title);
+
+            switch (choice)
+            {
+                case 1:
+                {
+                    cout<<"Введите новое название песни: ";
+                    getline(cin,song_to_edit.title);
+                    break;
+                }
+
+                case 2:
+                {
+                    clear();
+                    song_to_edit.title = get_string_from_user(0, 0,"Введите новое название песни: ");
+                    break;
+                }
+            
+            }
             break;
         }
+
         case 2:
         {
-            cout<<"Введите новое имя автора: ";
-            getline(cin,song_to_edit.author);
+
+            switch (choice)
+            {
+                case 1:
+                {
+                    cout<<"Введите новое имя автора: ";
+                    getline(cin,song_to_edit.author);
+                    break;
+                }
+
+                case 2:
+                {
+                    clear();
+                    song_to_edit.author = get_string_from_user(0,0,"Введите новое имя автора: ");
+                    break;
+                }
+            
+            }
             break;
         }
+
         case 3:
         {
-            cout<<"Введите новый год выпуска: ";
-            cin>>song_to_edit.year;
+
+            switch (choice)
+            {
+                case 1:
+                {
+                    cout<<"Введите новый год выпуска: ";
+                    cin>>song_to_edit.year;
+                    break;
+                }
+
+                case 2:
+                {
+                    clear();
+                    song_to_edit.year = stoi(get_string_from_user(0,0,"Введите новый год выпуска: "));
+                    break;
+                }
+            
+            }
             break;
         }
+
         case 4:
+        {
             soung_text.clear();
 
-            cout<<"Введите * для того что бы завершить"<<endl;
-            while (true)
-            {
-                string line;
-                getline(cin,line);
-                if(line == "*")
-                {
-                    break;
-                }else{
-                    soung_text.push_back(line);
-                }
-            }
 
+            switch (choice)
+            {
+                case 1:
+                {
+                    cout<<"Введите * для того что бы завершить"<<endl;
+                    while (true)
+                    {
+                        string line;
+                        getline(cin,line);
+                        if(line == "*")
+                        {
+                            break;
+                        }else{
+                            soung_text.push_back(line);
+                        }
+                    }
+                    break;
+                }
+
+                case 2:
+                {
+                    soung_text = get_lyrics_from_user(0,0);
+                    break;
+                }
+            
+            }
             break;
+        }
 
     }
 
-    updateAndRenameSong(song_to_edit,soung_text);
+    updateAndRenameSong(song_to_edit,soung_text,choice);
 
+    if(screen_state != nullptr)
+    {
+        *screen_state = MAIN_MENU;
+    }
 }
 
 
 
-void findSongsByAuthor(vector<Sounds> &song_catalog)
+void findSongsByAuthor(vector<Sounds> &song_catalog,const int choice,ScreenState* screen_state = nullptr)
 {
-    cout<<"Введтие имя автора по которому бдем искать: ";
-    string author_name;
-    getline(cin,author_name);
 
-    cout<<"Этому автору пренадлежат такие песни как: "<<endl;
+    string author_name;
+
+    switch (choice)
+    {
+        case 1:
+        {   
+            cout<<"Введтие имя автора по которому бдем искать: ";
+            getline(cin,author_name);
+            break;
+        }
+
+        case 2:
+        {
+            clear();
+            author_name = get_string_from_user(0,0,"Введтие имя автора по которому бдем искать: ");
+            break;
+        }
+    
+    
+    }
+
+    int current_y = 1;
+    const int x_coordinate = 4;
+    switch (choice)
+            {
+                case 1:
+                {
+                    cout<<"Этому автору пренадлежат такие песни как: "<<endl;
+                    break;
+                }
+
+                case 2:
+                {
+                    clear();
+                    mvprintw(current_y,x_coordinate,"Этому автору пренадлежат такие песни как: ");
+                    current_y++;
+                    break;
+                }
+            
+            }
+    
+
     int count = 0;
-    for(Sounds name: song_catalog)
+    for(const Sounds& name: song_catalog)
     {
         if(name.author == author_name)
         {
-            cout<<count+1<<")"<<name.title<<" "<<name.year<<" года выпуска"<<endl;
+            switch (choice)
+            {
+                case 1:
+                {
+                    cout<<count+1<<")"<<name.title<<" "<<name.year<<" года выпуска"<<endl;
+                    break;
+                }
+
+                case 2:
+                {
+                    // clear();
+                    mvprintw(current_y,x_coordinate,"%d)%s %d года выпуска",count+1,name.title.c_str(),name.year);
+                    current_y++;
+                    refresh();
+                    break;
+                }
+            
+            }
+
             count++;
         }
     }
 
     if(count == 0)
     {
-        cout<<"Песен связаных с этим автором не обнаружено :("<<endl;
+        switch (choice)
+            {
+                case 1:
+                {
+                    cout<<"Песен связаных с этим автором не обнаружено :("<<endl;
+                    break;
+                }
+
+                case 2:
+                {
+                    clear();
+                    mvprintw(current_y,x_coordinate,"Песен связаных с этим автором не обнаружено :(");
+                    break;
+                }
+            
+            }
+
     }
 
+    if (choice == 2) {
+        int y = getmaxy(stdscr);
+        mvprintw(y - 1, 2, "Нажмите любую клавишу, чтобы вернуться в главное меню...");
+        refresh();
+        getch(); 
+    }
+
+
+    if(screen_state != nullptr)
+    {
+        *screen_state = MAIN_MENU;
+    }
 }
 
 
@@ -957,13 +1138,13 @@ void workWithUser(vector<Sounds> &song_catalog,string &db_dir_path)
 
                     case 4:
                     {
-                        editSong(song_catalog);
+                        editSong(song_catalog,choice);
                         break;
                     }
 
                     case 5:
                     {
-                        findSongsByAuthor(song_catalog);
+                        findSongsByAuthor(song_catalog,choice);
                         break;
                     }
 
@@ -1033,9 +1214,17 @@ void workWithUser(vector<Sounds> &song_catalog,string &db_dir_path)
 
                             current_screen = PRINTSOUND;
 
-                        }else if(show_menu_res ==2)
+                        }else if(show_menu_res == 2)
                         {
                             current_screen = DELATESONG;
+
+                        }else if(show_menu_res == 3)
+                        {
+                            current_screen = EDITSONG;
+
+                        }else if(show_menu_res == 4)
+                        {
+                            current_screen = FINDBYAUTHOR;
 
                         }else if(show_menu_res == 8 || show_menu_res == -1)
                         {
@@ -1064,6 +1253,19 @@ void workWithUser(vector<Sounds> &song_catalog,string &db_dir_path)
                     {
 
                         deleteSong(song_catalog,choice,&current_screen);
+                        break;
+                    }
+
+                    case EDITSONG:
+                    {
+
+                        editSong(song_catalog,choice,&current_screen);
+                        break;
+                    }
+
+                    case FINDBYAUTHOR:
+                    {
+                        findSongsByAuthor(song_catalog,choice,&current_screen);
                         break;
                     }
 
