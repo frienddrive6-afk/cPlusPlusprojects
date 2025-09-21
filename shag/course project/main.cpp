@@ -24,7 +24,8 @@ enum ScreenState {
     PRINTSOUND,
     DELATESONG,
     EDITSONG,
-    FINDBYAUTHOR,      
+    FINDBYAUTHOR,
+    FINDBYWORD,      
     EXIT_PROGRAM
 };
 
@@ -717,6 +718,7 @@ void editSong(vector<Sounds> &song_catalog,const int choice,ScreenState* screen_
         {
             cout<<"\nВведите номер песни изменить(начало с 1): ";
             cin>>redacted_index;
+            cin.ignore();
             break;
         }
 
@@ -949,7 +951,6 @@ void findSongsByAuthor(vector<Sounds> &song_catalog,const int choice,ScreenState
 
                 case 2:
                 {
-                    // clear();
                     mvprintw(current_y,x_coordinate,"%d)%s %d года выпуска",count+1,name.title.c_str(),name.year);
                     current_y++;
                     refresh();
@@ -999,32 +1000,91 @@ void findSongsByAuthor(vector<Sounds> &song_catalog,const int choice,ScreenState
 
 
 
-void findSongsByWord(vector<Sounds> &song_catalog)
+void findSongsByWord(vector<Sounds> &song_catalog,const int choice,ScreenState* screen_state = nullptr)
 {
-    cout<<"Введите слово которое вы хотите найти в песне(Ответ название песни в котором есть это слово если оно имеется): ";
     string word;
-    cin>>word;
+
+    switch (choice)
+    {
+        case 1:
+        {
+            cout<<"Введите слово которое вы хотите найти в песне(Ответ название песни в котором есть это слово если оно имеется): ";
+            cin>>word;
+            break;
+        }
+
+        case 2:
+        {
+            clear();
+            word = get_string_from_user(0,0,"Введите слово которое вы хотите найти в песне(Ответ название песни в котором есть это слово если оно имеется): ");
+            break;
+        }
+            
+    }
+    
+
+    int current_y = 2; 
+    const int x_coordinate = 4;
+    int found_count = 0; 
+
+    if (choice == 2) {
+        clear();
+        mvprintw(0, 2, "Результаты поиска по слову '%s':", word.c_str());
+    } else {
+        cout << "Найдены следующие песни:" << endl;
+    }
 
     for(Sounds song: song_catalog)
     {
         string path_to_file = song.source_filename;
         vector<string> soung_text = readTextFromFile(path_to_file);
 
-        int count_this_word = 0;
+        bool word_found_in_this_song = false;
         for(string linee : soung_text)
         {
             if(linee.find(word) != string::npos)
             {
-                count_this_word++;
+                word_found_in_this_song = true;
+                break;
             }
         }
 
-        if(count_this_word > 0)
+        if(word_found_in_this_song == true)
         {
-            // cout<<"В песне под названием " <<song.title <<" автора "<< song.author<<" было найдено это слово " <<count_this_word<<" раз"<<endl;
-            cout<<"В песне под названием " <<song.title <<" автора "<< song.author<<endl;
+            found_count++; 
+            if (choice == 1) {
+                cout << found_count << ") " << song.title << " автора " << song.author << endl;
+            } else {
+                mvprintw(current_y, x_coordinate, "%d) %s автора %s", found_count, song.title.c_str(), song.author.c_str());
+                current_y++; 
+            }
+
+            
         }
 
+    }
+
+    if (found_count == 0) {
+        if (choice == 1) {
+            cout << "Песен, содержащих это слово, не найдено." << endl;
+        } else {
+            mvprintw(current_y, x_coordinate, "Песен, содержащих это слово, не найдено.");
+        }
+    }
+
+    if (choice == 2) {
+        int y, x;
+        getmaxyx(stdscr, y, x);
+        mvprintw(y - 1, 2, "Нажмите любую клавишу для возврата в меню...");
+        refresh();
+        getch();
+    }
+
+
+
+    if (screen_state != nullptr)
+    {
+        *screen_state = MAIN_MENU;
     }
 }
 
@@ -1150,7 +1210,7 @@ void workWithUser(vector<Sounds> &song_catalog,string &db_dir_path)
 
                     case 6:
                     {
-                        findSongsByWord(song_catalog);
+                        findSongsByWord(song_catalog,choice);
                         break;
                     }
 
@@ -1226,6 +1286,9 @@ void workWithUser(vector<Sounds> &song_catalog,string &db_dir_path)
                         {
                             current_screen = FINDBYAUTHOR;
 
+                        }else if(show_menu_res == 5)
+                        {
+                            current_screen = FINDBYWORD;
                         }else if(show_menu_res == 8 || show_menu_res == -1)
                         {
                             current_screen = EXIT_PROGRAM;
@@ -1266,6 +1329,12 @@ void workWithUser(vector<Sounds> &song_catalog,string &db_dir_path)
                     case FINDBYAUTHOR:
                     {
                         findSongsByAuthor(song_catalog,choice,&current_screen);
+                        break;
+                    }
+
+                    case FINDBYWORD:
+                    {
+                        findSongsByWord(song_catalog,choice,&current_screen);
                         break;
                     }
 
