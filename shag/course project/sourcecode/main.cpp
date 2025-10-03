@@ -155,19 +155,27 @@ void workWithUser(vector<Sounds> &song_catalog,string &db_dir_path)
 
             while (true)
             {
+                system("clear");
+
+                cout << HEADER << "===========================================================" << endl;
+                cout << "        " << lang[TITLE_MAIN_MENU] << endl;
+                cout << "===========================================================" << RESET << endl << endl;
+
                 // cout<<"Доброго времени суток пользователь.\nВас приведствует программа \"Каталог текстов и песен\".\nВот вы можете сделать:\n1)Добавить новую песню.\n2)Вывести все существующие песни на экран.\n3)Удалить песню.\n4)Редактировать информацию о песне и текст песни.\n5)Найти все песни автора.\n6)Найти песни в тексте которых есть указаное вами слово.\n7)Вывести полностью текст песни.\n8)Сохранить текст песни в txt файл в указаный вами путь.\nДля того чтобы закончить введите любую другую цыфру.\nВаш выбор: ";
-                cout << lang[PROMPT_MAIN_MENU] << endl;
-                    cout << lang[MENU_ADD_SONG] << endl;
-                    cout << lang[MENU_SHOW_ALL] << endl;
-                    cout << lang[MENU_DELETE_SONG] << endl;
-                    cout << lang[MENU_EDIT_SONG] << endl;
-                    cout << lang[MENU_FIND_AUTHOR] << endl;
-                    cout << lang[MENU_FIND_WORD] << endl;
-                    cout << lang[MENU_DISPLAY_FULL] << endl;
-                    cout << lang[MENU_SAVE_TO_FILE] << endl;
-                    cout << lang[MENU_CHANGE_LANGUAGE] << endl; 
-                    cout << lang[MENU_EXIT] << endl;
-                    cout << lang[PROMPT_YOUR_CHOICE];
+                cout << PROMPT << lang[PROMPT_MAIN_MENU] << RESET << endl;
+                cout << LABEL << lang[MENU_ADD_SONG] << endl;
+                cout << LABEL << lang[MENU_SHOW_ALL] << endl;
+                cout << LABEL << lang[MENU_DELETE_SONG] << endl;
+                cout << LABEL << lang[MENU_EDIT_SONG] << endl;
+                cout << LABEL << lang[MENU_FIND_AUTHOR] << endl;
+                cout << LABEL << lang[MENU_FIND_WORD] << endl;
+                cout << LABEL << lang[MENU_DISPLAY_FULL] << endl;
+                cout << LABEL << lang[MENU_SAVE_TO_FILE] << endl;
+                cout << LABEL << lang[MENU_CHANGE_LANGUAGE] << endl;
+                cout << HIGHLIGHT << lang[MENU_EXIT] << RESET << endl << endl; 
+                cout << PROMPT << lang[PROMPT_YOUR_CHOICE] << RESET;
+
+
                 int choise;
                 cin>>choise;
 
@@ -234,6 +242,10 @@ void workWithUser(vector<Sounds> &song_catalog,string &db_dir_path)
                         return;
                         break;
                 }
+
+
+                cout << endl << PROMPT << lang[PROMPT_PRESS_ANY_KEY] << RESET;
+                cin.get();
             }
 
             break;

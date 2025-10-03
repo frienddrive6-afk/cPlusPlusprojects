@@ -5,6 +5,19 @@
 #include <string>
 #include <ncurses.h>
 
+// ===================================
+// ====== ЦВЕТА ДЛЯ КОНСОЛИ ==========
+// ===================================
+#define RESET   "\033[0m"
+#define HEADER  "\033[93m" // Ярко-желтый
+#define LABEL   "\033[34m" // Синий
+#define VALUE   "\033[32m" // Зеленый
+#define HIGHLIGHT "\033[91m" // Ярко-красный
+#define PROMPT  "\033[36m" // Голубой (Cyan)
+#define ERROR   "\033[31m" // Красный
+
+
+
 using namespace std;
 
 struct Sounds

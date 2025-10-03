@@ -17,7 +17,7 @@ void saveSongToFile(const Sounds& song, const vector<string>& lyrics,const int c
     if (!fileW.is_open()) {
         if(choice == 1)
         {
-            cout << lang[ERROR_FILE_OPEN] << endl;
+            cout << ERROR << lang[ERROR_FILE_OPEN] << RESET << endl;
         }
         return;
     }
@@ -167,17 +167,17 @@ void loadSongs(string &db_dir_path,vector<Sounds> &song_catalog)
 {
     if(!filesystem::exists(db_dir_path))
     {
-        cout << lang[MSG_DB_NOT_FOUND];
+        cout << endl << HEADER << lang[MSG_DB_NOT_FOUND] << RESET;
         int vubor;
         cin>>vubor;
         if(vubor == 1)
         {
-            cout << lang[PROMPT_ENTER_FULL_PATH];
+            cout << PROMPT << lang[PROMPT_ENTER_FULL_PATH] << RESET;
             cin>>db_dir_path;
         }else if(vubor == 2)
         {
             filesystem::create_directory(db_dir_path);
-            cout << lang[MSG_FOLDER_CREATED] << db_dir_path << endl;
+            cout << VALUE << lang[MSG_FOLDER_CREATED] << db_dir_path << RESET << endl;
         }
     }
 
@@ -223,13 +223,14 @@ void createSound(string &db_dir_path,vector<Sounds> &song_catalog,const int choi
     {
         case 1:
         {   
-            cout << lang[PROMPT_ENTER_TITLE];
+            system("clear");
+            cout << PROMPT << lang[PROMPT_ENTER_TITLE] << RESET;
             getline(cin,new_song.title);
 
-            cout << lang[PROMPT_ENTER_AUTHOR];
+            cout << PROMPT << lang[PROMPT_ENTER_AUTHOR] << RESET;
             getline(cin,new_song.author);
 
-            cout << lang[PROMPT_ENTER_YEAR];
+            cout << PROMPT << lang[PROMPT_ENTER_YEAR] << RESET;
             cin>>new_song.year;
             cin.ignore();
 
@@ -264,10 +265,10 @@ void createSound(string &db_dir_path,vector<Sounds> &song_catalog,const int choi
     {
         case 1:
         { 
-            cout << endl << lang[TITLE_ADD_TEXT_MENU] << endl;
-            cout << "1) " << lang[MENU_ADD_TEXT_MANUALLY] << endl; 
-            cout << "2) " << lang[MENU_ADD_TEXT_FROM_FILE] << endl;
-            cout << lang[PROMPT_YOUR_CHOICE];
+            cout << endl << HEADER << lang[TITLE_ADD_TEXT_MENU] << RESET << endl;
+            cout << LABEL << "1) " << lang[MENU_ADD_TEXT_MANUALLY] << endl;
+            cout << LABEL << "2) " << lang[MENU_ADD_TEXT_FROM_FILE] << endl;
+            cout << PROMPT << lang[PROMPT_YOUR_CHOICE] << RESET;
             cin >> vubor;
             cin.ignore(); 
             break;
@@ -380,22 +381,21 @@ void createSound(string &db_dir_path,vector<Sounds> &song_catalog,const int choi
 void displayAllSongs(vector<Sounds> &song_catalog)
 {
     cout<<endl;
-    cout << endl << lang[HEADER_ALL_SONGS] << "\n" << endl;
+    cout << endl << HEADER << "================ " << lang[HEADER_ALL_SONGS] << " ================" << RESET << endl << endl;
     int i = 1;
     for(Sounds song : song_catalog)
     {
-        cout << lang[SONG_NUMBER_PREFIX] << "\033[31m" << i << "\033[0m" << endl;
-        cout << "\033[34m" << lang[SONG_TITLE_PREFIX] << "\033[32m" << song.title << endl;
-        cout << "\033[34m" << lang[SONG_AUTHOR_PREFIX] << "\033[32m" << song.author << endl;
-        cout << "\033[34m" << lang[SONG_YEAR_PREFIX] << "\033[32m" << song.year << "\033[0m" << endl;
-        cout<<endl;
+        cout << HEADER << lang[SONG_NUMBER_PREFIX] << HIGHLIGHT << i << RESET << endl;
+            cout << LABEL << lang[SONG_TITLE_PREFIX] << VALUE << song.title << endl;
+            cout << LABEL << lang[SONG_AUTHOR_PREFIX] << VALUE << song.author << endl;
+            cout << LABEL << lang[SONG_YEAR_PREFIX] << VALUE << song.year << RESET << endl;
+            cout << "----------------------------------------" << endl << endl;
         i++;
     }
 
 
 
-    cout <<"\033[33m" << lang[FOOTER_ALL_SONGS] << endl;
-    cout<<"\033[0m"<<endl;
+    cout << HEADER << "================ " << lang[FOOTER_ALL_SONGS] << " ===================" << RESET << endl << endl;
 }
 
 void deleteSong(vector<Sounds> &song_catalog,const int choice,ScreenState* screen_state )
@@ -405,7 +405,7 @@ void deleteSong(vector<Sounds> &song_catalog,const int choice,ScreenState* scree
     {
         case 1:
         {
-            cout << lang[PROMPT_CHOOSE_SONG_TO_DELETE];
+            cout << PROMPT << lang[PROMPT_CHOOSE_SONG_TO_DELETE] << RESET;
             cin>>delated_index;
             break;
         }
@@ -709,7 +709,8 @@ void findSongsByAuthor(vector<Sounds> &song_catalog,const int choice,ScreenState
     {
         case 1:
         {   
-            cout << lang[PROMPT_FIND_BY_AUTHOR];
+            system("clear");
+            cout << PROMPT << lang[PROMPT_FIND_BY_AUTHOR] << RESET;
             getline(cin,author_name);
             break;
         }
@@ -730,7 +731,8 @@ void findSongsByAuthor(vector<Sounds> &song_catalog,const int choice,ScreenState
             {
                 case 1:
                 {
-                    cout << lang[MSG_AUTHOR_SONGS_ARE] << endl;
+                    cout << endl << HEADER << lang[MSG_AUTHOR_SONGS_ARE] << RESET << endl;
+                    cout << "--------------------------------" << endl;
                     break;
                 }
 
@@ -754,7 +756,7 @@ void findSongsByAuthor(vector<Sounds> &song_catalog,const int choice,ScreenState
             {
                 case 1:
                 {
-                    cout<<count+1<<")"<<name.title<<" "<<name.year<<lang[MSG_YEAR_SUFFIX]<<endl;
+                    cout << VALUE << count+1 << ") " << name.title << " (" << name.year << lang[MSG_YEAR_SUFFIX] << ")" << RESET << endl;
                     break;
                 }
 
@@ -779,7 +781,7 @@ void findSongsByAuthor(vector<Sounds> &song_catalog,const int choice,ScreenState
             {
                 case 1:
                 {
-                    cout << lang[MSG_AUTHOR_SONGS_NOT_FOUND] << endl;
+                    cout << HIGHLIGHT << lang[MSG_AUTHOR_SONGS_NOT_FOUND] << RESET << endl;
                     break;
                 }
 
@@ -820,6 +822,7 @@ void findSongsByWord(vector<Sounds> &song_catalog,const int choice,ScreenState* 
         {
             cout << lang[PROMPT_FIND_BY_WORD];
             cin>>word;
+            cin.ignore();
             break;
         }
 
@@ -841,7 +844,7 @@ void findSongsByWord(vector<Sounds> &song_catalog,const int choice,ScreenState* 
         clear();
         mvprintw(0, 2, lang[MSG_SEARCH_RESULTS_FOR_WORD].c_str(), word.c_str());
     } else {
-        cout << format_string(lang[MSG_SEARCH_RESULTS_FOR_WORD],word) << endl;
+        cout << HEADER << "--- " << format_string(lang[MSG_SEARCH_RESULTS_FOR_WORD], word) << " ---" << RESET << endl << endl;
     }
 
     for(Sounds song: song_catalog)
@@ -863,7 +866,7 @@ void findSongsByWord(vector<Sounds> &song_catalog,const int choice,ScreenState* 
         {
             found_count++; 
             if (choice == 1) {
-                cout << found_count << ") " << song.title << lang[MSG_AUTHOR_SUFFIX] << song.author << endl;
+                cout << VALUE << found_count << ") " << song.title << LABEL << lang[MSG_AUTHOR_SUFFIX] << VALUE << song.author << RESET << endl;
             } else {
                 string formatted_output = to_string(found_count) + ") " + song.title + lang[MSG_AUTHOR_SUFFIX] + song.author;
                 mvprintw(current_y, x_coordinate, "%s", formatted_output.c_str());
@@ -877,7 +880,7 @@ void findSongsByWord(vector<Sounds> &song_catalog,const int choice,ScreenState* 
 
     if (found_count == 0) {
         if (choice == 1) {
-            cout << lang[MSG_WORD_NOT_FOUND] << endl;
+            cout << endl << HIGHLIGHT << lang[MSG_WORD_NOT_FOUND] << RESET << endl;
         } else {
             mvprintw(current_y, x_coordinate, "%s",lang[MSG_WORD_NOT_FOUND].c_str());
         }
@@ -909,15 +912,18 @@ void displayFullSong(vector<Sounds> &song_catalog,const int choice,ScreenState* 
     {
         case 1:
         {
-            cout << endl << lang[TITLE_DISPLAY_MODE_MENU] << endl;
-            cout << "1) " << lang[MENU_DISPLAY_TERMINAL] << endl;
-            cout << "2) " << lang[MENU_DISPLAY_EDITOR] << endl;
-            cout << lang[PROMPT_YOUR_CHOICE];
+            system("clear");
+            cout << HEADER << "--- " << lang[TITLE_DISPLAY_MODE_MENU] << " ---" << RESET << endl;
+            cout << LABEL << "1) " << lang[MENU_DISPLAY_TERMINAL] << endl;
+            cout << LABEL << "2) " << lang[MENU_DISPLAY_EDITOR] << endl << endl;
+            cout << PROMPT << lang[PROMPT_YOUR_CHOICE] << RESET;
             
             cin >> vubor;
 
-            cout << lang[PROMPT_CHOOSE_SONG_TO_DISPLAY];
+            cout << PROMPT << lang[PROMPT_CHOOSE_SONG_TO_DISPLAY] << RESET;
             cin >> number;
+
+            cin.ignore();
             break;
         }
         case 2:
@@ -935,6 +941,17 @@ void displayFullSong(vector<Sounds> &song_catalog,const int choice,ScreenState* 
         }
 
     }
+
+    if (number < 1 || number > song_catalog.size()) {
+        if (choice == 1) {
+            cout << endl << ERROR << lang[ERROR_INVALID_SONG_NUMBER] << RESET << endl;
+        }
+        if(screen_state != nullptr)
+        {
+            *screen_state = MAIN_MENU;
+        }
+        return;
+    }
     
 
     switch (vubor)
@@ -947,12 +964,14 @@ void displayFullSong(vector<Sounds> &song_catalog,const int choice,ScreenState* 
                 {
                     case 1:
                     {
-                        cout<<lang[SONG_TITLE_PREFIX]<<song_catalog[number-1].title<<endl;
-                        cout<<lang[SONG_AUTHOR_PREFIX]<<song_catalog[number-1].author<<endl;
-                        cout<<lang[SONG_YEAR_PREFIX]<<song_catalog[number-1].year<<endl;
-                        cout<<"\n"<<endl;
+                        system("clear");
+                        cout << HEADER << "========================================" << endl;
+                        cout << LABEL << lang[SONG_TITLE_PREFIX] << VALUE << song_catalog[number-1].title << endl;
+                        cout << LABEL << lang[SONG_AUTHOR_PREFIX] << VALUE << song_catalog[number-1].author << endl;
+                        cout << LABEL << lang[SONG_YEAR_PREFIX] << VALUE << song_catalog[number-1].year << endl;
+                        cout << HEADER << "========================================" << RESET << endl << endl;
 
-                        cout << lang[HEADER_LYRICS] << endl;
+                        cout << HEADER << lang[HEADER_LYRICS] << RESET << endl;
                         
                         
                         
@@ -960,10 +979,10 @@ void displayFullSong(vector<Sounds> &song_catalog,const int choice,ScreenState* 
 
                         for(string linee : soung_text)
                         {
-                            cout<<linee<<endl;
+                            cout << VALUE << linee << RESET << endl;
                         }
 
-                        cout << lang[FOOTER_LYRICS] << endl;
+                        cout << HEADER << lang[FOOTER_LYRICS] << RESET << endl;
 
                         break;
                     }
@@ -1112,15 +1131,6 @@ void changeLanguage(const int choice, ScreenState* screen_state_ptr) {
     }
 
     if (available_languages.empty()) {
-        if (choice == 1) {
-            cout << "\n Мовні пакети не знайдені в папці ./lang\n";
-        } else {
-            clear();
-            mvprintw(2, 2, "Мовні пакети не знайдені в папці ./lang");
-            mvprintw(4, 2,"%s",lang[PROMPT_PRESS_ANY_KEY].c_str());
-            refresh();
-            getch();
-        }
         if (screen_state_ptr) *screen_state_ptr = MAIN_MENU;
         return;
     }
@@ -1128,14 +1138,14 @@ void changeLanguage(const int choice, ScreenState* screen_state_ptr) {
     int lang_choice = -1;
 
     if (choice == 1) { 
-        cout << "\nВиберіть мову:\n";
+        cout << endl << HEADER << "Виберіть мову:" << RESET << endl;
         for (int i = 0; i < lang_names.size(); ++i) {
-            cout << i + 1 << ") " << lang_names[i] << endl;
+            cout << LABEL << i + 1 << ") " << lang_names[i] << RESET << endl;
         }
-        cout << lang[PROMPT_YOUR_CHOICE];
+        cout << PROMPT << lang[PROMPT_YOUR_CHOICE] << RESET;
         cin >> lang_choice;
         cin.ignore();
-        lang_choice--;
+        lang_choice--; 
     } else { // Ncurses режим
         lang_choice = show_menu("Виберіть мову", lang_names);
         if (lang_choice == -1) { // нажал Esc
@@ -1143,6 +1153,18 @@ void changeLanguage(const int choice, ScreenState* screen_state_ptr) {
             return;
         }
     }
+    
+
+    if (lang_choice >= 0 && lang_choice < available_languages.size()) {
+        string lang_code_to_load = available_languages[lang_choice];
+        
+        loadLanguagePack(lang_code_to_load);
+    } else {
+        if (choice == 1 && lang_choice != -2) { //   -2   Esc в ncurses
+            //  cout << endl << ERROR << "Невірний вибір." << RESET << endl;
+        }
+    }
+
 
     if (screen_state_ptr)
     {
