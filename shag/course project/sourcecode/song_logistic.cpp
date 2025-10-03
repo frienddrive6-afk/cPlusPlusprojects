@@ -17,7 +17,7 @@ void saveSongToFile(const Sounds& song, const vector<string>& lyrics,const int c
     if (!fileW.is_open()) {
         if(choice == 1)
         {
-            cout << "ОШИБКА при открытии файла!" << endl;
+            cout << lang[ERROR_FILE_OPEN] << endl;
         }
         return;
     }
@@ -57,7 +57,7 @@ void parseSongFile(string &db_dir_path,vector<Sounds> &song_catalog)
             ifstream fileR(thisPath);
             if(!fileR.is_open())
             {
-                cout << "ОШИБКА при открытии файла!" << endl;
+                cout << lang[ERROR_FILE_OPEN] << endl;
             }
 
             int line_index = 0;
@@ -159,7 +159,7 @@ void parseSongFile(string &db_dir_path,vector<Sounds> &song_catalog)
         }
     }else
     {
-        cout<<"Увы пока что нет ни одной музыки"<<endl;
+        cout << lang[MSG_NO_SONGS_YET] << endl;
     }
 }
 
@@ -167,23 +167,34 @@ void loadSongs(string &db_dir_path,vector<Sounds> &song_catalog)
 {
     if(!filesystem::exists(db_dir_path))
     {
-        cout<<"По пути по умолчанию папки с песнями нету :( у вас два варианта\n1)указать путь к папке если она существовала\n2)создать папку и начать добавление песен";
+        cout << lang[MSG_DB_NOT_FOUND];
         int vubor;
         cin>>vubor;
         if(vubor == 1)
         {
-            cout<<"уккажите новый ПОЛНЫЙ путь к папке с музыками: ";
+            cout << lang[PROMPT_ENTER_FULL_PATH];
             cin>>db_dir_path;
         }else if(vubor == 2)
         {
             filesystem::create_directory(db_dir_path);
-            cout<<"Была создана папка для хранения песен по такому пути -> "<< db_dir_path <<endl; 
+            cout << lang[MSG_FOLDER_CREATED] << db_dir_path << endl;
         }
     }
 
     parseSongFile(db_dir_path,song_catalog);
     
 }
+
+// Функція для простої заміни одного %s у рядку
+string format_string(const string& format, const string& value) {
+    string result = format;
+    long pos = result.find("%s");
+    if (pos != string::npos) {
+        result.replace(pos, 2, value); 
+    }
+    return result;
+}
+
 
 string zamenaSpasNa_(string &start_name)
 {
@@ -212,13 +223,13 @@ void createSound(string &db_dir_path,vector<Sounds> &song_catalog,const int choi
     {
         case 1:
         {   
-            cout<<"Введите название песни: ";
+            cout << lang[PROMPT_ENTER_TITLE];
             getline(cin,new_song.title);
 
-            cout<<"Введите имя автора: ";
+            cout << lang[PROMPT_ENTER_AUTHOR];
             getline(cin,new_song.author);
 
-            cout<<"Введите год выпуска: ";
+            cout << lang[PROMPT_ENTER_YEAR];
             cin>>new_song.year;
             cin.ignore();
 
@@ -228,13 +239,13 @@ void createSound(string &db_dir_path,vector<Sounds> &song_catalog,const int choi
         case 2:
         {
             clear();
-            new_song.title = get_string_from_user(0, 0, "Введите название песни: ");
+            new_song.title = get_string_from_user(0, 0, lang[PROMPT_ENTER_TITLE]);
             
             clear();
-            new_song.author = get_string_from_user(0, 0, "Введите имя автора: ");
+            new_song.author = get_string_from_user(0, 0, lang[PROMPT_ENTER_AUTHOR]);
 
             clear();
-            new_song.year = stoi(get_string_from_user(0, 0, "Введите год выпуска: "));
+            new_song.year = stoi(get_string_from_user(0, 0, lang[PROMPT_ENTER_YEAR]));
 
             break;
         }
@@ -253,16 +264,21 @@ void createSound(string &db_dir_path,vector<Sounds> &song_catalog,const int choi
     {
         case 1:
         { 
-            cout<<"теперь надо добавить текст тут два варианта\n1)добавление в ручную\n2)Добавление из файла(указать полный путь к файлу с текстом)\nВаш выбор: ";
-            cin>>vubor;
+            cout << endl << lang[TITLE_ADD_TEXT_MENU] << endl;
+            cout << "1) " << lang[MENU_ADD_TEXT_MANUALLY] << endl; 
+            cout << "2) " << lang[MENU_ADD_TEXT_FROM_FILE] << endl;
+            cout << lang[PROMPT_YOUR_CHOICE];
+            cin >> vubor;
             cin.ignore(); 
             break;
         }
 
         case 2:
         {
-            vector<string> items = {"1)добавление в ручную","2)Добавление из файла(указать полный путь к файлу с текстом)"};
-            vubor = show_menu("Надо добавить текст тут два варианта",items)+1;
+            // vector<string> items = {"1)добавление в ручную","2)Добавление из файла(указать полный путь к файлу с текстом)"};
+            vector<string> items = {lang[MENU_ADD_TEXT_MANUALLY], lang[MENU_ADD_TEXT_FROM_FILE]};
+            int menu_choice = show_menu(lang[TITLE_ADD_TEXT_MENU], items);
+            vubor = menu_choice + 1;
             break;
         }
 
@@ -275,7 +291,7 @@ void createSound(string &db_dir_path,vector<Sounds> &song_catalog,const int choi
         {
             case 1:
             { 
-                cout<<"Введите * для того что бы завершить"<<endl;
+                cout << lang[PROMPT_ADD_TEXT_MANUAL_STOP] << endl;
                 while (true)
                 {
                     string line;
@@ -311,7 +327,7 @@ void createSound(string &db_dir_path,vector<Sounds> &song_catalog,const int choi
         {
             case 1:
             { 
-                cout<<"Введите полны путь к файлу: ";
+                cout << lang[PROMPT_ADD_TEXT_FILE_PATH];
                 getline(cin, fullPathToSoundText);
                 break;
             }
@@ -319,7 +335,7 @@ void createSound(string &db_dir_path,vector<Sounds> &song_catalog,const int choi
             case 2:
             {
                 clear();
-                fullPathToSoundText = get_string_from_user(0, 0, "Введите полны путь к файлу: ");
+                fullPathToSoundText = get_string_from_user(0, 0, lang[PROMPT_ADD_TEXT_FILE_PATH]);
                 break;
             }
 
@@ -332,7 +348,7 @@ void createSound(string &db_dir_path,vector<Sounds> &song_catalog,const int choi
         {
             if(choice != 2)
             {
-                cout << "ОШИБКА при открытии файла!" << endl;
+                cout << lang[ERROR_FILE_OPEN] << endl;
             }
             return;
         }
@@ -364,21 +380,21 @@ void createSound(string &db_dir_path,vector<Sounds> &song_catalog,const int choi
 void displayAllSongs(vector<Sounds> &song_catalog)
 {
     cout<<endl;
-    cout<<"\033[33m----------Начало вывода-----------\033[0m\n"<<endl;
+    cout << endl << lang[HEADER_ALL_SONGS] << "\n" << endl;
     int i = 1;
     for(Sounds song : song_catalog)
     {
-        cout<<"Песня номер -> \033[31m"<< i <<"\033[0m"<<endl;
-        cout<<"\033[34mНазвание песни: \033[32m" <<song.title<<endl;
-        cout<<"\033[34mАвтор: \033[32m"<<song.author<<endl;
-        cout<<"\033[34mГод выпуска: \033[32m"<<song.year<<"\033[0m"<<endl;
+        cout << lang[SONG_NUMBER_PREFIX] << "\033[31m" << i << "\033[0m" << endl;
+        cout << "\033[34m" << lang[SONG_TITLE_PREFIX] << "\033[32m" << song.title << endl;
+        cout << "\033[34m" << lang[SONG_AUTHOR_PREFIX] << "\033[32m" << song.author << endl;
+        cout << "\033[34m" << lang[SONG_YEAR_PREFIX] << "\033[32m" << song.year << "\033[0m" << endl;
         cout<<endl;
         i++;
     }
 
 
 
-    cout<<"\033[33m---------Конец--------\033[30m"<<endl;
+    cout <<"\033[33m" << lang[FOOTER_ALL_SONGS] << endl;
     cout<<"\033[0m"<<endl;
 }
 
@@ -389,7 +405,7 @@ void deleteSong(vector<Sounds> &song_catalog,const int choice,ScreenState* scree
     {
         case 1:
         {
-            cout<<"\nВведите номер песни какую ходите удалить(начало с 1): ";
+            cout << lang[PROMPT_CHOOSE_SONG_TO_DELETE];
             cin>>delated_index;
             break;
         }
@@ -397,7 +413,7 @@ void deleteSong(vector<Sounds> &song_catalog,const int choice,ScreenState* scree
         case 2:
         {
             clear();
-            delated_index = stoi(get_string_from_user(0,0,"Введите номер песни какую ходите удалить(начало с 1): "));
+            delated_index = stoi(get_string_from_user(0,0,lang[PROMPT_CHOOSE_SONG_TO_DELETE]));
             break;
         }
 
@@ -447,7 +463,7 @@ vector<string> readTextFromFile(string &path_to_file)
     ifstream fileR(path_to_file);
     if(!fileR.is_open())
     {
-        cout << "ОШИБКА при открытии файла!" << endl;
+        cout << lang[ERROR_FILE_OPEN] << endl;
         return vector<string>();
     }
 
@@ -495,7 +511,7 @@ void editSong(vector<Sounds> &song_catalog,const int choice,ScreenState* screen_
     {
         case 1:
         {
-            cout<<"\nВведите номер песни изменить(начало с 1): ";
+            cout << lang[PROMPT_CHOOSE_SONG_TO_EDIT];
             cin>>redacted_index;
             cin.ignore();
             break;
@@ -504,7 +520,7 @@ void editSong(vector<Sounds> &song_catalog,const int choice,ScreenState* screen_
         case 2:
         {
             clear();
-            redacted_index = stoi(get_string_from_user(0, 0,"Введите номер песни изменить(начало с 1): "));
+            redacted_index = stoi(get_string_from_user(0, 0,lang[PROMPT_CHOOSE_SONG_TO_EDIT]));
             break;
         }
     
@@ -519,7 +535,7 @@ void editSong(vector<Sounds> &song_catalog,const int choice,ScreenState* screen_
     if (redacted_index < 1 || redacted_index > song_catalog.size()) {
         if(choice == 1)
         {
-            cout << "Ошибка не верный номер песни" << endl;
+            cout << lang[ERROR_INVALID_SONG_NUMBER] << endl;
         }
         return;
     }
@@ -535,7 +551,14 @@ void editSong(vector<Sounds> &song_catalog,const int choice,ScreenState* screen_
     {
         case 1:
         {
-            cout<<"Введите параметр какой хотите изменить\n1)Название песни\n2)Имя автора\n3)Год выпуска\n4)Текст песни(Прийдется писать весь заново)\nВаш выбор: ";
+            cout << endl << lang[PROMPT_EDIT_CHOICE] << ":" << endl;
+            
+            cout << "1) " << lang[MENU_EDIT_TITLE] << endl;
+            cout << "2) " << lang[MENU_EDIT_AUTHOR] << endl;
+            cout << "3) " << lang[MENU_EDIT_YEAR] << endl;
+            cout << "4) " << lang[MENU_EDIT_LYRICS] << endl;
+            
+            cout << lang[PROMPT_YOUR_CHOICE]<<": ";
             cin>>vubor;
             cin.ignore();
             break;
@@ -543,8 +566,14 @@ void editSong(vector<Sounds> &song_catalog,const int choice,ScreenState* screen_
 
         case 2:
         {
-            vector<string> items_menu = {"1)Название песни","2)Имя автора","3)Год выпуска","4)Текст песни(Прийдется писать весь заново)"};
-            vubor = show_menu("Параметр какой хотите изменить", items_menu)+1;
+            // vector<string> items_menu = {"1)Название песни","2)Имя автора","3)Год выпуска","4)Текст песни(Прийдется писать весь заново)"};
+            vector<string> items_menu = {
+                lang[MENU_EDIT_TITLE],
+                lang[MENU_EDIT_AUTHOR],
+                lang[MENU_EDIT_YEAR],
+                lang[MENU_EDIT_LYRICS]
+            };
+            vubor = show_menu(lang[PROMPT_EDIT_CHOICE], items_menu)+1;
             break;
         }
     
@@ -562,7 +591,7 @@ void editSong(vector<Sounds> &song_catalog,const int choice,ScreenState* screen_
             {
                 case 1:
                 {
-                    cout<<"Введите новое название песни: ";
+                    cout<<lang[MENU_EDIT_TITLE]<<": ";
                     getline(cin,song_to_edit.title);
                     break;
                 }
@@ -570,7 +599,7 @@ void editSong(vector<Sounds> &song_catalog,const int choice,ScreenState* screen_
                 case 2:
                 {
                     clear();
-                    song_to_edit.title = get_string_from_user(0, 0,"Введите новое название песни: ");
+                    song_to_edit.title = get_string_from_user(0, 0,lang[MENU_EDIT_TITLE]);
                     break;
                 }
             
@@ -585,7 +614,7 @@ void editSong(vector<Sounds> &song_catalog,const int choice,ScreenState* screen_
             {
                 case 1:
                 {
-                    cout<<"Введите новое имя автора: ";
+                    cout<<lang[MENU_EDIT_AUTHOR]<<": ";
                     getline(cin,song_to_edit.author);
                     break;
                 }
@@ -593,7 +622,7 @@ void editSong(vector<Sounds> &song_catalog,const int choice,ScreenState* screen_
                 case 2:
                 {
                     clear();
-                    song_to_edit.author = get_string_from_user(0,0,"Введите новое имя автора: ");
+                    song_to_edit.author = get_string_from_user(0,0,lang[MENU_EDIT_AUTHOR]);
                     break;
                 }
             
@@ -608,7 +637,7 @@ void editSong(vector<Sounds> &song_catalog,const int choice,ScreenState* screen_
             {
                 case 1:
                 {
-                    cout<<"Введите новый год выпуска: ";
+                    cout<<lang[MENU_EDIT_YEAR]<<": ";
                     cin>>song_to_edit.year;
                     break;
                 }
@@ -616,7 +645,7 @@ void editSong(vector<Sounds> &song_catalog,const int choice,ScreenState* screen_
                 case 2:
                 {
                     clear();
-                    song_to_edit.year = stoi(get_string_from_user(0,0,"Введите новый год выпуска: "));
+                    song_to_edit.year = stoi(get_string_from_user(0,0,lang[MENU_EDIT_YEAR]));
                     break;
                 }
             
@@ -633,7 +662,7 @@ void editSong(vector<Sounds> &song_catalog,const int choice,ScreenState* screen_
             {
                 case 1:
                 {
-                    cout<<"Введите * для того что бы завершить"<<endl;
+                    cout<<lang[PROMPT_ADD_TEXT_MANUAL_STOP]<<endl;
                     while (true)
                     {
                         string line;
@@ -680,7 +709,7 @@ void findSongsByAuthor(vector<Sounds> &song_catalog,const int choice,ScreenState
     {
         case 1:
         {   
-            cout<<"Введтие имя автора по которому бдем искать: ";
+            cout << lang[PROMPT_FIND_BY_AUTHOR];
             getline(cin,author_name);
             break;
         }
@@ -688,7 +717,7 @@ void findSongsByAuthor(vector<Sounds> &song_catalog,const int choice,ScreenState
         case 2:
         {
             clear();
-            author_name = get_string_from_user(0,0,"Введтие имя автора по которому бдем искать: ");
+            author_name = get_string_from_user(0,0,lang[PROMPT_FIND_BY_AUTHOR]);
             break;
         }
     
@@ -701,14 +730,14 @@ void findSongsByAuthor(vector<Sounds> &song_catalog,const int choice,ScreenState
             {
                 case 1:
                 {
-                    cout<<"Этому автору пренадлежат такие песни как: "<<endl;
+                    cout << lang[MSG_AUTHOR_SONGS_ARE] << endl;
                     break;
                 }
 
                 case 2:
                 {
                     clear();
-                    mvprintw(current_y,x_coordinate,"Этому автору пренадлежат такие песни как: ");
+                    mvprintw(current_y,x_coordinate,"%s",lang[MSG_AUTHOR_SONGS_ARE].c_str());
                     current_y++;
                     break;
                 }
@@ -725,13 +754,14 @@ void findSongsByAuthor(vector<Sounds> &song_catalog,const int choice,ScreenState
             {
                 case 1:
                 {
-                    cout<<count+1<<")"<<name.title<<" "<<name.year<<" года выпуска"<<endl;
+                    cout<<count+1<<")"<<name.title<<" "<<name.year<<lang[MSG_YEAR_SUFFIX]<<endl;
                     break;
                 }
 
                 case 2:
                 {
-                    mvprintw(current_y,x_coordinate,"%d)%s %d года выпуска",count+1,name.title.c_str(),name.year);
+                    string formatted_output = to_string(count + 1) + ") " + name.title + " " + to_string(name.year) + lang[MSG_YEAR_SUFFIX];
+                    mvprintw(current_y,x_coordinate, "%s", formatted_output.c_str());
                     current_y++;
                     refresh();
                     break;
@@ -749,14 +779,14 @@ void findSongsByAuthor(vector<Sounds> &song_catalog,const int choice,ScreenState
             {
                 case 1:
                 {
-                    cout<<"Песен связаных с этим автором не обнаружено :("<<endl;
+                    cout << lang[MSG_AUTHOR_SONGS_NOT_FOUND] << endl;
                     break;
                 }
 
                 case 2:
                 {
                     clear();
-                    mvprintw(current_y,x_coordinate,"Песен связаных с этим автором не обнаружено :(");
+                    mvprintw(current_y,x_coordinate,"%s",lang[MSG_AUTHOR_SONGS_NOT_FOUND].c_str());
                     break;
                 }
             
@@ -766,7 +796,7 @@ void findSongsByAuthor(vector<Sounds> &song_catalog,const int choice,ScreenState
 
     if (choice == 2) {
         int y = getmaxy(stdscr);
-        mvprintw(y - 1, 2, "Нажмите любую клавишу, чтобы вернуться в главное меню...");
+        mvprintw(y - 1, 2,"%s", lang[PROMPT_PRESS_ANY_KEY].c_str());
         refresh();
         getch(); 
     }
@@ -788,7 +818,7 @@ void findSongsByWord(vector<Sounds> &song_catalog,const int choice,ScreenState* 
     {
         case 1:
         {
-            cout<<"Введите слово которое вы хотите найти в песне(Ответ название песни в котором есть это слово если оно имеется): ";
+            cout << lang[PROMPT_FIND_BY_WORD];
             cin>>word;
             break;
         }
@@ -796,7 +826,7 @@ void findSongsByWord(vector<Sounds> &song_catalog,const int choice,ScreenState* 
         case 2:
         {
             clear();
-            word = get_string_from_user(0,0,"Введите слово которое вы хотите найти в песне(Ответ название песни в котором есть это слово если оно имеется): ");
+            word = get_string_from_user(0,0,lang[PROMPT_FIND_BY_WORD]);
             break;
         }
             
@@ -809,9 +839,9 @@ void findSongsByWord(vector<Sounds> &song_catalog,const int choice,ScreenState* 
 
     if (choice == 2) {
         clear();
-        mvprintw(0, 2, "Результаты поиска по слову '%s':", word.c_str());
+        mvprintw(0, 2, lang[MSG_SEARCH_RESULTS_FOR_WORD].c_str(), word.c_str());
     } else {
-        cout << "Найдены следующие песни:" << endl;
+        cout << format_string(lang[MSG_SEARCH_RESULTS_FOR_WORD],word) << endl;
     }
 
     for(Sounds song: song_catalog)
@@ -833,9 +863,10 @@ void findSongsByWord(vector<Sounds> &song_catalog,const int choice,ScreenState* 
         {
             found_count++; 
             if (choice == 1) {
-                cout << found_count << ") " << song.title << " автора " << song.author << endl;
+                cout << found_count << ") " << song.title << lang[MSG_AUTHOR_SUFFIX] << song.author << endl;
             } else {
-                mvprintw(current_y, x_coordinate, "%d) %s автора %s", found_count, song.title.c_str(), song.author.c_str());
+                string formatted_output = to_string(found_count) + ") " + song.title + lang[MSG_AUTHOR_SUFFIX] + song.author;
+                mvprintw(current_y, x_coordinate, "%s", formatted_output.c_str());
                 current_y++; 
             }
 
@@ -846,16 +877,16 @@ void findSongsByWord(vector<Sounds> &song_catalog,const int choice,ScreenState* 
 
     if (found_count == 0) {
         if (choice == 1) {
-            cout << "Песен, содержащих это слово, не найдено." << endl;
+            cout << lang[MSG_WORD_NOT_FOUND] << endl;
         } else {
-            mvprintw(current_y, x_coordinate, "Песен, содержащих это слово, не найдено.");
+            mvprintw(current_y, x_coordinate, "%s",lang[MSG_WORD_NOT_FOUND].c_str());
         }
     }
 
     if (choice == 2) {
         int y, x;
         getmaxyx(stdscr, y, x);
-        mvprintw(y - 1, 2, "Нажмите любую клавишу для возврата в меню...");
+        mvprintw(y - 1, 2, "%s",lang[PROMPT_PRESS_ANY_KEY].c_str());
         refresh();
         getch();
     }
@@ -871,30 +902,34 @@ void findSongsByWord(vector<Sounds> &song_catalog,const int choice,ScreenState* 
 
 void displayFullSong(vector<Sounds> &song_catalog,const int choice,ScreenState* screen_state)
 {
-    int vubor;
-    int number;
+    int vubor = 0 ;
+    int number = 0;
 
     switch (choice)
     {
         case 1:
         {
-            cout<<"Выбере способ отображение песни\n1)Вывести в терминал\n2)Открыть в текстовом редакторе по умолчанию\nВаш выбор: ";
-            cin>>vubor;
+            cout << endl << lang[TITLE_DISPLAY_MODE_MENU] << endl;
+            cout << "1) " << lang[MENU_DISPLAY_TERMINAL] << endl;
+            cout << "2) " << lang[MENU_DISPLAY_EDITOR] << endl;
+            cout << lang[PROMPT_YOUR_CHOICE];
+            
+            cin >> vubor;
 
-            cout<<"Выберете номер песню которую хотите вывести(Начинается с 1): ";
-            cin>>number;
-
+            cout << lang[PROMPT_CHOOSE_SONG_TO_DISPLAY];
+            cin >> number;
             break;
         }
         case 2:
         {
             clear();
-            vector<string> items = {"1)Вывести в терминал","2)Открыть в текстовом редакторе по умолчанию"};
-
-            vubor = show_menu("Выбере способ отображение песни:", items)+1;
+            vector<string> items = {lang[MENU_DISPLAY_TERMINAL], lang[MENU_DISPLAY_EDITOR]};
+            
+            int menu_choice = show_menu(lang[TITLE_DISPLAY_MODE_MENU], items);
+            vubor = menu_choice + 1;
 
             clear();
-            number = stoi(get_string_from_user(0,0,"Выберете номер песню которую хотите вывести(Начинается с 1): "));
+            number = stoi(get_string_from_user(0, 0, lang[PROMPT_CHOOSE_SONG_TO_DISPLAY]));
             
             break;
         }
@@ -912,12 +947,12 @@ void displayFullSong(vector<Sounds> &song_catalog,const int choice,ScreenState* 
                 {
                     case 1:
                     {
-                        cout<<"Название песни: "<<song_catalog[number-1].title<<endl;
-                        cout<<"Имя автора: "<<song_catalog[number-1].author<<endl;
-                        cout<<"Год выпуска: "<<song_catalog[number-1].year<<endl;
+                        cout<<lang[SONG_TITLE_PREFIX]<<song_catalog[number-1].title<<endl;
+                        cout<<lang[SONG_AUTHOR_PREFIX]<<song_catalog[number-1].author<<endl;
+                        cout<<lang[SONG_YEAR_PREFIX]<<song_catalog[number-1].year<<endl;
                         cout<<"\n"<<endl;
 
-                        cout<<"----------Текст песни----------"<<endl;
+                        cout << lang[HEADER_LYRICS] << endl;
                         
                         
                         
@@ -928,7 +963,7 @@ void displayFullSong(vector<Sounds> &song_catalog,const int choice,ScreenState* 
                             cout<<linee<<endl;
                         }
 
-                        cout<<"----------Конец песни----------"<<endl;
+                        cout << lang[FOOTER_LYRICS] << endl;
 
                         break;
                     }
@@ -968,7 +1003,7 @@ void saveTextSongToFile(vector<Sounds> &song_catalog,const int choice,ScreenStat
     {
         case 1:
         {
-            cout<<"Выберете песню которую хотите сохранить: ";
+            cout << lang[PROMPT_CHOOSE_SONG_TO_SAVE];
             cin>>song_index;
             cin.ignore();
             break;
@@ -977,7 +1012,7 @@ void saveTextSongToFile(vector<Sounds> &song_catalog,const int choice,ScreenStat
         case 2:
         {
             clear();
-            song_index = stoi(get_string_from_user(0,0,"Выберете песню которую хотите сохранить: "));
+            song_index = stoi(get_string_from_user(0,0,lang[PROMPT_CHOOSE_SONG_TO_SAVE]));
 
             break;
         }
@@ -995,7 +1030,7 @@ void saveTextSongToFile(vector<Sounds> &song_catalog,const int choice,ScreenStat
     {
         case 1:
         {
-            cout<<"Введите полный путь в который вы хотите сохранить песню: ";
+            cout << lang[PROMPT_ENTER_FULL_PATH];
             getline(cin,path_to_file);
             break;
         }
@@ -1003,7 +1038,7 @@ void saveTextSongToFile(vector<Sounds> &song_catalog,const int choice,ScreenStat
         case 2:
         {
             clear();
-            path_to_file = get_string_from_user(0,0,"Введите полный путь в который вы хотите сохранить песню: ");
+            path_to_file = get_string_from_user(0,0,lang[PROMPT_ENTER_FULL_PATH]);
 
             break;
         }
@@ -1019,4 +1054,98 @@ void saveTextSongToFile(vector<Sounds> &song_catalog,const int choice,ScreenStat
         *screen_state = MAIN_MENU;
     }
 
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+bool loadLanguagePack(const string& lang_code) {
+    string file_path = "./lang/" + lang_code + ".txt";
+    ifstream fileR(file_path);
+
+    if (!fileR.is_open()) {
+        cout << lang[ERROR_FILE_OPEN] << endl;
+        return false;
+    }
+
+    vector<string> new_lang_pack;
+    string line;
+    while (getline(fileR, line)) {
+        new_lang_pack.push_back(line);
+    }
+    fileR.close();
+
+    if (new_lang_pack.size() != STRING_COUNT) {
+        return false;
+    }
+
+    lang = new_lang_pack; 
+    return true;
+}
+
+void changeLanguage(const int choice, ScreenState* screen_state_ptr) {
+    string lang_dir_path = "./lang";
+    vector<string> available_languages;
+    vector<string> lang_names;
+
+    if (filesystem::exists(lang_dir_path) && filesystem::is_directory(lang_dir_path)) {
+        for (const auto& entry : filesystem::directory_iterator(lang_dir_path)) {
+            if (entry.path().extension() == ".txt") {
+                string lang_code = entry.path().stem().string();
+                available_languages.push_back(lang_code);
+
+                if (lang_code == "en") lang_names.push_back("English");
+                else if (lang_code == "ru") lang_names.push_back("Русский");
+                else if (lang_code == "ua") lang_names.push_back("Українська");
+                else lang_names.push_back(lang_code); 
+            }
+        }
+    }
+
+    if (available_languages.empty()) {
+        if (choice == 1) {
+            cout << "\n Мовні пакети не знайдені в папці ./lang\n";
+        } else {
+            clear();
+            mvprintw(2, 2, "Мовні пакети не знайдені в папці ./lang");
+            mvprintw(4, 2,"%s",lang[PROMPT_PRESS_ANY_KEY].c_str());
+            refresh();
+            getch();
+        }
+        if (screen_state_ptr) *screen_state_ptr = MAIN_MENU;
+        return;
+    }
+
+    int lang_choice = -1;
+
+    if (choice == 1) { 
+        cout << "\nВиберіть мову:\n";
+        for (int i = 0; i < lang_names.size(); ++i) {
+            cout << i + 1 << ") " << lang_names[i] << endl;
+        }
+        cout << lang[PROMPT_YOUR_CHOICE];
+        cin >> lang_choice;
+        cin.ignore();
+        lang_choice--;
+    } else { // Ncurses режим
+        lang_choice = show_menu("Виберіть мову", lang_names);
+        if (lang_choice == -1) { // нажал Esc
+            if (screen_state_ptr) *screen_state_ptr = MAIN_MENU;
+            return;
+        }
+    }
+
+    if (screen_state_ptr)
+    {
+         *screen_state_ptr = MAIN_MENU;
+    }
 }

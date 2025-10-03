@@ -106,10 +106,10 @@ void show_song_list_screen(const vector<Sounds>& song_catalog,ScreenState &scree
     int y, x;
     getmaxyx(stdscr, y, x);
 
-    mvprintw(1, 2, "--- Список всіх пісень ---");
+    mvprintw(1, 2,"%s",lang[MENU_SHOW_ALL].c_str());
 
     if (song_catalog.empty()) {
-        mvprintw(3, 2, "Каталог порожній.");
+        mvprintw(3, 2,"%s", lang[MSG_NO_SONGS_YET].c_str());
     } else {
         for (int i = 0; i < song_catalog.size(); ++i) {
             if (3 + i >= y - 1) { 
@@ -123,7 +123,7 @@ void show_song_list_screen(const vector<Sounds>& song_catalog,ScreenState &scree
         }
     }
 
-    mvprintw(y - 1, 2, "Натисніть будь-яку клавішу, щоб повернутися...");
+    mvprintw(y - 1, 2, "%s",lang[PROMPT_PRESS_ANY_KEY].c_str());
     refresh();
     getch();
 
@@ -136,7 +136,7 @@ void show_song_list_screen(const vector<Sounds>& song_catalog,ScreenState &scree
 vector<string> get_lyrics_from_user(int start_y, int start_x) {
     
     attron(A_BOLD);
-    mvprintw(start_y, start_x, "Введіть текст. Натисніть Ctrl+D для завершення.");
+    mvprintw(start_y, start_x,"%s", lang[PROMPT_ENTER_LYRICS_CTRL_D].c_str());
     attroff(A_BOLD);
 
     start_y++; 
@@ -225,9 +225,9 @@ void printLyricWithncurses(const Sounds& sound,const vector<string>& lyric)
 
     int y_current = 1;
 
-    mvprintw(y_current++,start_x,"Название песни: %s",sound.title.c_str());
-    mvprintw(y_current++,start_x,"Имя автора: %s",sound.author.c_str());
-    mvprintw(y_current++,start_x,"Год выпуска: %d",sound.year);
+    mvprintw(y_current++, start_x, (lang[SONG_TITLE_PREFIX] + "%s").c_str(), sound.title.c_str());
+    mvprintw(y_current++, start_x, (lang[SONG_AUTHOR_PREFIX] + "%s").c_str(), sound.author.c_str());
+    mvprintw(y_current++, start_x, (lang[SONG_YEAR_PREFIX] + "%d").c_str(), sound.year);
     y_current++;
 
     for(string line : lyric)
@@ -239,7 +239,7 @@ void printLyricWithncurses(const Sounds& sound,const vector<string>& lyric)
         }
     }
 
-    mvprintw(y,0,"Для того что бы продолжить нажмите на любую клавишу ....");
+    mvprintw(y, 0, "%s",lang[PROMPT_PRESS_ANY_KEY].c_str());
     refresh();
     getch();
 }
