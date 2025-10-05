@@ -13,7 +13,11 @@ using namespace std;
 
 vector<string> lang;
 
-
+/**
+ * @brief Завантажує стандартний (український) мовний пакет при запуску програми.
+ * 
+ * Ця функція ініціалізує вектор 'lang' початковими значеннями.
+ */
 void loadDefaultLanguage() {
     lang = {
         // PROMPT_INTERFACE_TYPE
@@ -139,7 +143,14 @@ void loadDefaultLanguage() {
 
 
 
-
+/**
+ * @brief Головний цикл взаємодії з користувачем.
+ * 
+ * Функція визначає, який інтерфейс (звичайний чи ncurses) обрав користувач,
+ * та запускає відповідний цикл обробки команд меню.
+ * @param song_catalog Посилання на вектор, що містить каталог пісень.
+ * @param db_dir_path Посилання на рядок зі шляхом до папки з піснями.
+ */
 void workWithUser(vector<Sounds> &song_catalog,string &db_dir_path)
 {
 
@@ -418,14 +429,22 @@ void workWithUser(vector<Sounds> &song_catalog,string &db_dir_path)
 }
 
 
+
+/**
+ * @brief Головна функція програми (точка входу).
+ * 
+ * Ініціалізує мову, завантажує каталог пісень та запускає
+ * головний цикл взаємодії з користувачем.
+ * @return 0 у разі успішного завершення.
+ */
 int main()
 {
     setlocale(LC_ALL, "");
     loadDefaultLanguage();
 
-    string db_dir_path = "./sound";
+    string db_dir_path = "./sound";// Шлях до папки з піснями за замовчуванням
 
-    vector<Sounds> song_catalog;
+    vector<Sounds> song_catalog;// Основний контейнер для зберігання всіх завантажених пісень
 
 
     loadSongs(db_dir_path,song_catalog);

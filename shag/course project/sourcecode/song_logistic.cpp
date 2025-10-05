@@ -185,7 +185,6 @@ void loadSongs(string &db_dir_path,vector<Sounds> &song_catalog)
     
 }
 
-// Функція для простої заміни одного %s у рядку
 string format_string(const string& format, const string& value) {
     string result = format;
     long pos = result.find("%s");
