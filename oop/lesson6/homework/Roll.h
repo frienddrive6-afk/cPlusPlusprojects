@@ -19,6 +19,30 @@ public:
     title{ t}
     {}
 
-    float getArea();
-    float getPrise();
+    float getArea()
+    {
+        return width * len;
+    }
+
+    float getPrice()
+    {
+        return price;
+    }
+
+    float getRollWidth()
+    { 
+        return width; 
+    }
+
+    float getRollLength()
+    { 
+        return len; 
+    }
+
+    std::string getTitle()
+    {
+        return title;
+    }
+
+
 };

@@ -15,6 +15,7 @@
 
 #include "Roll.h"
 #include "vector.h"
+#include "Room.h"
 
 
 using namespace std;

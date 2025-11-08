@@ -52,6 +52,7 @@ public:
         return *this;
     }
 
+
     void createArray() {
         delete[] array;
         if (array_len > 0) {
@@ -60,6 +61,7 @@ public:
             array = nullptr;
         }
     }
+
 
     void push_back(const T& num) {
         int new_len = array_len + 1;
@@ -73,6 +75,7 @@ public:
         array_len = new_len;
     }
 
+
     T print_index(int index) {
         if (index >= 0 && index < array_len) {
             return array[index];
@@ -80,11 +83,13 @@ public:
         return T{}; 
     }
 
+
     void change_by_index(int index, const T& new_num) {
         if (index >= 0 && index < array_len) {
             array[index] = new_num;
         }
     }
+
 
     void delate_by_index(int index) {
         if (index < 0 || index >= array_len) {
@@ -111,9 +116,20 @@ public:
         array_len = new_len;
     }
 
+
     int size() {
         return array_len;
     }
+
+
+    T* get_element_ptr(int index) {
+        if (index >= 0 && index < array_len) {
+            return &array[index]; 
+        }
+        return nullptr; 
+    }
+
+
 };
 
 
