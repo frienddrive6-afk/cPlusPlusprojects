@@ -13,7 +13,8 @@ class Room
 private:
     std::string name_room;
     Roll* roll;
-    Wall* walls;
+    // Wall* walls;
+    Wall walls[4];
     float heigth;
     MyVector<NonActiveArea> freeArea;
     
@@ -22,15 +23,10 @@ public:
     Room():
         name_room{"Неопределена"},
         roll{nullptr},
-        walls{new Wall[4]},
+        // walls{new Wall[4]},
         heigth{}
     {}
 
-    ~Room()
-    {
-
-        delete[] walls;
-    }
 
     std::string return_name()
     {
@@ -85,4 +81,33 @@ public:
 
         return required_rolls * roll->getPrice();
     }
+
+    void addName(std::string new_name)
+    {
+        name_room = new_name;
+    }
+
+    void addRoll(Roll* r)
+    {
+        roll = r;
+    }
+
+    void addAllWidthForRoom(float* array)
+    {
+        walls[0].addWidth(array[0]);
+        walls[1].addWidth(array[1]);
+        walls[2].addWidth(array[2]);
+        walls[3].addWidth(array[3]);
+    }
+
+    void addHeigth(float h)
+    {
+        heigth = h;
+    }
+
+    void push_backNonActiveArea(NonActiveArea non)
+    {
+        freeArea.push_back(non);
+    }
+
 };

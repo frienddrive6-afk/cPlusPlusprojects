@@ -22,4 +22,14 @@ public:
         return width * height;
     }
 
+    void addWidth(float w)
+    {
+        width = w;
+    }
+
+    void addHeigth(float h)
+    {
+        height = h;
+    }
+
 };

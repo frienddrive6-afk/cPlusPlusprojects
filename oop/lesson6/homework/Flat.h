@@ -46,10 +46,20 @@ public:
         return rooms;
     }
 
+    MyVector<Room>* return_rooms_ptr()
+    {
+        return &rooms;
+    }
+
 
     MyVector<Roll> return_rolls()
     {
         return available_rolls;
+    }
+
+    MyVector<Roll>* return_rolls_ptr()
+    {
+        return &available_rolls;
     }
 
 

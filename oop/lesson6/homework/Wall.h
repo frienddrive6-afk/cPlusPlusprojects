@@ -21,5 +21,10 @@ public:
         return width;
     }
 
+    void addWidth(float new_width)
+    {
+        width = new_width;
+    }
+
 
 };
